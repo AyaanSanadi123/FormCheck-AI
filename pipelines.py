@@ -95,11 +95,10 @@ class BenchPipeline(ExercisePipeline):
             return frame
 
         # 2. Normalization
-        # BenchRep only accepts normalized landmarks
+        # BenchRep accepts both normalized and raw landmarks; raw landmarks are passed for visualization.
         normalized_landmarks = self.normalizer.process(landmarks)
 
         # 3. Rep Logic
-        # Now passing both normalized and raw landmarks
         packet = self.rep_logic.process(normalized_landmarks, raw_landmarks=landmarks)
 
         # 4. Visualization
