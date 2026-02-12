@@ -13,6 +13,12 @@ from flat_barbell_press.normalizer.normalizer import BenchNormalizer
 from flat_barbell_press.rep.rep import BenchPressRep
 from flat_barbell_press.visualizer.visualizer import BenchVisualizer
 
+# Overhead Press Imports
+from overhead_press.gatekeeper.gatekeeper import OverheadPressGatekeeper
+from overhead_press.normalizer.normalizer import OverheadPressNormalizer
+from overhead_press.rep.rep import OverheadPressRepCounter
+from overhead_press.visualizer.visualizer import OverheadPressVisualizer
+
 class ExercisePipeline:
     def process(self, frame, landmarks):
         """
@@ -104,6 +110,79 @@ class BenchPipeline(ExercisePipeline):
         # 4. Visualization
         return self.visualizer.draw(frame, packet)
 
+class BenchPipeline(ExercisePipeline):
+    def __init__(self):
+        self.gatekeeper = BenchGatekeeper()
+        self.normalizer = BenchNormalizer()
+        self.rep_logic = None
+        self.visualizer = BenchVisualizer()
+        self.calibration_data = None
+        self.status_message = "Initializing..."
+
+    def process(self, frame, landmarks):
+        if not landmarks:
+            return frame
+
+        # 1. Gatekeeper
+        if not self.rep_logic:
+            passed, msg, cal_data = self.gatekeeper.check(landmarks)
+            
+            cv2.putText(frame, f"SETUP: {msg}", (50, 50), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            
+            if passed:
+                self.calibration_data = cal_data
+                self.rep_logic = BenchPressRep(cal_data)
+                print(f"Bench Calibration Complete: {cal_data}")
+            
+            return frame
+
+        # 2. Normalization
+        # BenchRep accepts both normalized and raw landmarks; raw landmarks are passed for visualization.
+        normalized_landmarks = self.normalizer.process(landmarks)
+
+        # 3. Rep Logic
+        packet = self.rep_logic.process(normalized_landmarks, raw_landmarks=landmarks)
+
+        # 4. Visualization
+        return self.visualizer.draw(frame, packet)
+
+class OverheadPressPipeline(ExercisePipeline):
+    def __init__(self):
+        self.gatekeeper = OverheadPressGatekeeper()
+        self.normalizer = OverheadPressNormalizer()
+        self.rep_logic = None
+        self.visualizer = OverheadPressVisualizer()
+        self.calibration_data = None
+        self.status_message = "Initializing..."
+
+    def process(self, frame, landmarks):
+        if not landmarks:
+            return frame
+
+        # 1. Gatekeeper
+        if not self.rep_logic:
+            passed, msg, cal_data = self.gatekeeper.check(landmarks)
+            
+            cv2.putText(frame, f"SETUP: {msg}", (50, 50), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            
+            if passed:
+                self.calibration_data = cal_data
+                self.rep_logic = OverheadPressRepCounter(cal_data)
+                print(f"Overhead Press Calibration Complete: {cal_data}")
+            
+            return frame
+
+        # 2. Normalization
+        normalized_landmarks = self.normalizer.process(landmarks)
+
+        # 3. Rep Logic
+        packet = self.rep_logic.process(normalized_landmarks, raw_landmarks=landmarks)
+
+        # 4. Visualization
+        return self.visualizer.draw(frame, packet)
+
 class PipelineFactory:
     @staticmethod
     def get_pipeline(exercise_name):
@@ -111,5 +190,7 @@ class PipelineFactory:
             return SquatPipeline()
         elif exercise_name.lower() in ['bench', 'bench_press', 'flat_barbell_press']:
             return BenchPipeline()
+        elif exercise_name.lower() in ['overhead_press', 'overhead press', 'ohp']:
+            return OverheadPressPipeline()
         else:
             raise ValueError(f"Unknown exercise: {exercise_name}")

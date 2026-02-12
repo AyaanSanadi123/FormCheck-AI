@@ -1,0 +1,47 @@
+# OVERHEAD PRESS NORMALIZER: GEOMETRY STRATEGY
+# Version: 1.0
+
+## 1. THE CORE PROBLEMS
+
+### A. The "Skewed" Perspective
+The Gatekeeper allows a camera angle between 60° and 120°.
+* **Issue:** At 60° or 120°, the bar path appears diagonal even if the lift is perfectly vertical.
+* **Result:** Simple "X-coordinate" checks for bar path will fail. We need to mathematically rotate the lifter to be perfectly perpendicular to the camera (90°).
+
+### B. The "Left vs. Right" Ambiguity
+Users can film from the Left (-90°) or Right (+90°) side.
+* **Issue:** A blind rotation to +90° would "flip" a left-facing user inside out (mirroring their limbs).
+* **Solution:** The Normalizer detects the dominant side on the FIRST VALID FRAME and **latches** it.
+    *   If the user starts on the Left, we lock the target to -90°.
+    *   If they start on the Right, we lock to +90°.
+    *   **Why Latch?** This prevents the camera from flipping 180° if the user briefly turns towards the camera (0°) or if noise makes the angle fluctuate.
+
+### C. Jitter vs. Instability
+High-resolution webcams often have "micro-jitter" in depth (Z-axis) estimation.
+* **Issue:** If we strictly rotate every frame based on that frame's noise, the whole world will wobble.
+* **Solution:** We use an **Exponential Moving Average (EMA)** on the *Correction Angle*. We smooth the "Camera Lens" (the perspective correction) while letting the "User" (the limbs) move freely. This stabilizes the view without adding lag to the user's movement.
+
+## 2. THE MATHEMATICAL MODEL
+
+### Step 1: Dynamic Anchor Point (The "Pivot")
+The Overhead Press anchors to the **Shoulders**.
+* **Crucial Logic:** We treat the **Current Frame's Mid-Shoulder Point** as the geometric center for rotation.
+*   **Why Dynamic?** If the user sways or moves slightly, the pivot must move *with* them.
+    *   **Latched Anchor (Bad):** If we locked the anchor to the starting position, a swaying user would appear to "swing" in an arc around the old point, creating false depth movement.
+    *   **Dynamic Anchor (Good):** By re-calculating the anchor every frame, a swaying user simply appears to move linearly in the normalized view. The Normalizer preserves the *true motion* (including errors) but removes the *perspective distortion*.
+
+### Step 2: Directional Rotation
+1.  Calculate current facing angle $\theta_{curr}$ (Vector between Hips).
+2.  Determine Target $\theta_{target}$ (Latched from Frame 1):
+    * If $\theta_{curr} < 0 \rightarrow$ Target is **-90°**.
+    * If $\theta_{curr} > 0 \rightarrow$ Target is **+90°**.
+3.  Calculate Delta $\delta = \theta_{target} - \theta_{curr}$.
+4.  Apply Smoothing to $\delta$.
+5.  Rotate all points around the **Current Mid-Shoulder Anchor** by $\delta_{smoothed}$.
+
+## 3. OUTPUT
+A list of `Landmark` objects where:
+* **X-axis:** The horizontal plane of movement (corrected for perspective).
+* **Y-axis:** True vertical (Gravity).
+* **Z-axis:** Lateral deviation (used to detect uneven pressing).
+* **Note:** The data correctly reflects user movement (e.g., swaying), allowing downstream logic to detect form errors accurately.

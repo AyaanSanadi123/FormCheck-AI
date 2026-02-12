@@ -1,0 +1,35 @@
+# OVERHEAD PRESS VISUALIZER: OBJECTIVES & STRATEGY
+# Version: 1.0
+
+## 1. THE PROBLEM: "INVISIBLE FORM"
+In an Overhead Press, the user cannot easily perceive critical form aspects:
+1.  **Bar Path:** The bar should travel in a relatively straight vertical line. Deviations forward or backward often indicate improper technique or compensation.
+2.  **Lockout Depth:** It's hard to tell if the arms are fully extended overhead without visual aids.
+3.  **Torso Stability:** Leaning back excessively (hyperextension of the lumbar spine) is a common and dangerous fault that is difficult to self-monitor.
+
+## 2. THE SOLUTION: THE "FORM-CHECK" HUD
+The Visualizer creates an Augmented Reality overlay that reveals these hidden metrics.
+
+### A. The Bar Path Tracer (The "Vertical Line")
+* **Concept:** We draw a trailing line behind the bar (wrists) for the last 15-30 frames.
+* **Goal:** To show the *straightness* of the vertical bar path.
+* **Visual Logic:**
+    * **Straight Vertical Line:** Ideal path (Green).
+    * **Deviations (Forward/Backward):** Indication of form issues (Flagged Red/Yellow).
+
+### B. The Torso Angle Indicator (The "Lean Back" Warning)
+* **Concept:** We draw a filled triangle connecting the **Hip**, **Shoulder**, and **Elbow**.
+* **Goal:** To visualize the torso's angle relative to the vertical and the degree of elbow extension.
+* **Visual Logic:**
+    * **Green/Transparent:** Torso is upright, elbows are extending well.
+    * **Solid Red:** Torso is leaning back excessively ("LEAN_BACK" fault) or elbows are not extending properly ("INCOMPLETE_LOCKOUT" fault). This gives immediate peripheral feedback.
+
+### C. The Lockout Target Box (The "Finish Line")
+* **Concept:** A semi-transparent target drawn above the **Head**.
+* **Goal:** To guide the user to a full and complete lockout at the top of the press.
+* **Instruction:** "Push the bar into the Blue Box." This helps the user understand the full range of motion.
+
+## 3. DATA LAYERING
+1.  **Skeleton Layer:** Draws lines between raw joints (Shoulders, Elbows, Wrists, Hips) so the user knows tracking is working.
+2.  **Data Layer:** Overlay the Tracer and Torso Angle Indicator on top of the video feed.
+3.  **Feedback Layer:** Text "Toast" messages (e.g., "DON'T LEAN BACK!") centered on screen.

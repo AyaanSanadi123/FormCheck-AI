@@ -1,23 +1,22 @@
-# BENCH PRESS GATEKEEPER: OBJECTIVES & LOGIC
+# OVERHEAD PRESS GATEKEEPER: OBJECTIVES & LOGIC
 # Version: 1.0
 
-## 1. THE PROBLEM: OCCLUSION & HORIZONTAL ALIGNMENT
-Unlike the Squat, the Bench Press occurs in a horizontal plane. This introduces two major risks for the Logic Engine:
-1.  **Plate Occlusion:** If the camera is too close to the head or feet (0° or 180°), the weight plates hide the Elbow and Wrist joints.
-2.  **Bench Occlusion:** The bench itself can hide the Hips or Shoulders if the angle is too low.
+## 1. THE PROBLEM: OCCLUSION & 3D RECONSTRUCTION
+The Overhead Press, like other lifts, requires a clear view for accurate 3D analysis. The key challenges are:
+1.  **Arm Occlusion:** If the camera is directly in front or behind the lifter, one arm will obscure the other, making it impossible to judge depth and lockout.
+2.  **Angle for Normalizer:** The Normalizer relies on a side-view to rotate the skeleton into a perfect 2D profile for analysis. A front/back view provides no depth information to correct.
 
-## 2. THE SOLUTION: THE "GOLDEN VIEW" ENFORCEMENT
-The Gatekeeper restricts the user to a side-diagonal view (60° to 120°) on either the Left or Right side. 
+## 2. THE SOLUTION: "SIDE-VIEW ONLY" ENFORCEMENT
+The Gatekeeper's primary job is to ensure the camera is positioned to the lifter's side.
 
 ### Validation Criteria:
-* **Horizontal Body Check:** The angle between the Shoulder-Midpoint and Hip-Midpoint must be near-horizontal (e.g., within 20° of the X-axis).
-* **Visibility Threshold:** 100% visibility (score > 0.5) is required for:
-    * Primary: Wrists, Elbows, Shoulders (The Pressing Unit).
-    * Secondary: Hips (To detect "Bridging" / Lifting off the bench).
-    * Tertiary: Feet (To detect "Heel Drive" stability).
-* **Facing Angle:** Enforces a range of 60° - 120° relative to the bench to ensure the Normalizer can accurately reconstruct the side-profile.
+* **Visibility Threshold:** All critical joints for the lift must be visible to the camera. This includes:
+    * Wrists, Elbows, Shoulders (the pressing chain)
+    * Hips (to monitor for excessive leaning)
+* **Facing Angle:** Enforces a strict angle range (e.g., 60° to 120°) to guarantee a side-view. This allows the normalizer to function correctly.
+* **Temporal Stability:** The lifter must stand still for a set duration (e.g., 2 seconds) to prove they are ready to begin the set. This prevents accidental calibration while setting up.
 
 ## 3. STATE TRANSITION
-* **PENDING:** Searching for a horizontal human.
-* **CALIBRATING:** User is lying on the bench; system is collecting floor/bench baselines.
-* **SUCCESS:** "Green Light" given to the SquatRep logic.
+* **PENDING:** Searching for a visible, correctly positioned lifter.
+* **CALIBRATING:** Lifter is visible and in the correct position. The system is waiting for them to remain still.
+* **SUCCESS:** The lifter is stable and in the correct position. The system is now ready to begin counting reps.

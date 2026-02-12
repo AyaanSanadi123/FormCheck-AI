@@ -1,0 +1,28 @@
+# OVERHEAD PRESS REP LOGIC: STRATEGY & SCORING
+# Version: 1.0
+
+## 1. CORE METRICS
+* **Vertical ROM:** % of Arm Length traveled from shoulder to lockout.
+* **Bar Path:** Horizontal deviation from a straight vertical line.
+* **Stability:** Torso angle to detect excessive leaning back.
+
+## 2. SCORING RULES (Start at 100)
+
+### Major Deductions (-10)
+1.  **"LEAN_BACK"**: Torso angle deviates more than the threshold from vertical.
+2.  **"ASYMMETRY"**: Left/Right Wrist Y-difference is too large.
+
+### Minor Deductions (-5)
+1.  **"INCOMPLETE_LOCKOUT"**: Elbows not fully extended at the top of the rep.
+2.  **"SHALLOW_DEPTH"**: Bar does not return to the shoulder/clavicle area.
+3.  **"BAD_PATH"**: Bar drifts too far horizontally during the press.
+
+## 3. STATE MACHINE TRIGGERS
+* **IDLE**: Bar is at the shoulders, waiting for upward movement.
+* **ASCENDING**: Bar velocity is negative (moving up).
+* **DESCENDING**: Bar velocity is positive (moving down).
+* **COMPLETE**: Bar returns to the shoulder area.
+
+## 4. DATA INPUTS
+* `gatekeeper.calibration`: Contains `shoulder_y` (Shoulder Height) and `arm_length`.
+* `normalizer.process`: Returns `aligned_landmarks` (Shoulder-Anchored).

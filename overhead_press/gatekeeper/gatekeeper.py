@@ -13,7 +13,6 @@ class OverheadPressGatekeeper:
         # Thresholds
         self.VISIBILITY_THRESH = 0.65 # Slightly lower for bench as arms move fast
         self.STABILITY_VARIANCE = 0.005 # Wrist stability (Bar must be still)
-        self.HORIZONTAL_TOLERANCE = 0.20 # Max Y-diff between Shoulder & Hip
         self.ANGLE_TOLERANCE = (60, 120) # Side View Only
         
         # The Sliding Window
@@ -47,17 +46,7 @@ class OverheadPressGatekeeper:
                 self._reset(f"Joint {idx.name} hidden")
                 return False, "Ensure Arms & Hips are visible", None
 
-        # --- STEP 2: HORIZONTAL ORIENTATION CHECK ---
-        # User must be lying down. Compare Shoulder Y vs Hip Y.
-        # Note: In MediaPipe, Y increases downwards.
-        shoulder_y = (landmarks[11].y + landmarks[12].y) / 2
-        hip_y = (landmarks[23].y + landmarks[24].y) / 2
-        
-        if abs(shoulder_y - hip_y) > self.HORIZONTAL_TOLERANCE:
-            self._reset("User not flat")
-            return False, "Lie flat on the bench", None
-
-        # --- STEP 3: ANGLE CHECK ---
+        # --- STEP 2: ANGLE CHECK ---
         # We calculate the angle LOCALLY (no external import)
         angle = self._calculate_facing_angle(landmarks)
         
@@ -122,7 +111,7 @@ class OverheadPressGatekeeper:
 
     def _generate_passport(self, landmarks):
         """Captures the user's dimensions for the Rep Logic."""
-        avg_bench_height = np.mean([m['shoulder_y'] for m in self.validation_buffer])
+        avg_shoulder_height = np.mean([m['shoulder_y'] for m in self.validation_buffer])
         avg_angle = np.mean([m['angle'] for m in self.validation_buffer])
         
         # Calculate Arm Length (Shoulder to Wrist 3D distance)
@@ -132,7 +121,7 @@ class OverheadPressGatekeeper:
         arm_length = np.linalg.norm(s - w)
         
         return {
-            "bench_y": avg_bench_height,      # The "Zero" line for bridging
+            "shoulder_y": avg_shoulder_height,      # The "Zero" line for starting position
             "calibrated_angle": avg_angle,    # For Normalizer
             "arm_length": arm_length,         # For Depth Check
             "calibrated_at": time.time()
