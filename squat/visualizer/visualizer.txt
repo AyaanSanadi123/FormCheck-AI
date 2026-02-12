@@ -1,0 +1,44 @@
+# VISUALIZER: PROBLEM & SOLUTION STRATEGY
+# Version: 1.0
+
+## 1. THE CORE PROBLEM: THE "GHOST SKELETON" (Coordinate Mismatch)
+We have designed a system where the "Logic" and the "Video" exist in two different spatial realities.
+
+### The Disconnect
+1.  **The Video World (Raw):** The user is standing at a 75° angle. Their legs look foreshortened.
+2.  **The Logic World (Normalized):** We mathematically rotated the user to a perfect 90° Side View to calculate depth accurately.
+
+### The Visualization Paradox
+If we simply drew the data the Logic class is using:
+* **Result:** The user would see a "Ghost Skeleton" floating in mid-air next to them, rotated 15 degrees away from their real body.
+* **User Experience:** "The app is broken. It's not tracking me."
+
+If we simply drew the raw video data but displayed the logic's numbers:
+* **Result:** The screen shows the user's legs at 75° (visually), but the text says "90° Parallel".
+* **User Experience:** "The math is wrong. My legs don't look parallel."
+
+## 2. THE SOLUTION: THE "AR BRIDGE" ARCHITECTURE
+The Visualizer acts as a translation layer—an Augmented Reality (AR) engine that maps "Logic Truths" onto "Video Reality."
+
+### Strategy A: Hybrid Rendering
+* **Draw Lines using RAW Coordinates:** We use the raw MediaPipe landmarks so the skeleton lines "stick" perfectly to the user's body in the video.
+* **Draw Text using NORMALIZED Data:** We overlay the *corrected* angle values (e.g., "100°") next to the raw joints.
+* **The Bridge:** This tells the user: "We see you here (Raw Lines), but we know you achieved this depth (Normalized Text)."
+
+### Strategy B: Context-Aware Feedback (The "Toast" System)
+Instead of overwhelming the user with graphs, we use a hierarchical notification system:
+1.  **Status (Top Bar):** Silent info (Reps, Phase). Always visible.
+2.  **Alerts (Center Screen):** Only appear when a specific fault is triggered (e.g., "KNEES IN!").
+3.  **Highlights (Joints):** We change the color of *specific* body parts (e.g., turning just the knees Red) to direct attention to the fault location.
+
+## 3. ENGINEERING BENEFIT: DECOUPLING
+By strictly separating `SquatRep` (Physics) from `Visualizer` (Graphics), we solve two production risks:
+
+### A. Performance (The "Frame Drop" Optimization)
+Computer Vision logic is heavy. Rendering graphics is heavy. By separating them, we can run them at different rates on low-end devices:
+* **Logic:** Runs every frame (30 FPS) for accuracy.
+* **Visualizer:** Can skip frames (draw at 15 FPS) to save battery/CPU without missing a rep count.
+
+### B. Platform Agnostic
+* **Current State:** We use OpenCV (`cv2`) for Python.
+* **Future State:** If we move to a React Native mobile app or a Web Dashboard, we **only** replace this Visualizer class. The complex Physics Engine (`SquatRep`) remains untouched because it outputs pure JSON, not pixels.

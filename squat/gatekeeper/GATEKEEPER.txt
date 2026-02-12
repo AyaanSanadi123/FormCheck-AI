@@ -1,0 +1,35 @@
+# GATEKEEPER: OBJECTIVES & STRATEGY
+# Version: 1.1 (Deque Update)
+
+## 1. CORE OBJECTIVE
+The Gatekeeper is a temporal filter. It does not just check *if* the user is ready; it checks *how long* they have been ready. It enforces a strict "2-Second Rule" to ensure that the user's position is intentional and stable, providing a clean baseline for the OOPS Normalization logic.
+
+## 2. THE VALIDATION PIPELINE (The "Red Lights")
+
+### A. Instant Rejection (Frame-Level)
+If any of these occur in a single frame, the **Validation Buffer is CLEARED** (Timer resets to 0).
+1.  **Visibility:** Critical landmarks (Ankles, Shoulders, Nose) have visibility < 0.85.
+2.  **Clipping:** Critical landmarks are within the 5% edge margin of the screen.
+3.  **Scale:** Torso Length (Shoulder-to-Hip) is < 20% or > 80% of screen height.
+4.  **Bad Angle:** Calculated Hip Angle is < 60° (Frontal) or > 120° (Back/Oblique). *Note: We accept 60-120° because the Squat class handles normalization.*
+
+### B. Temporal Validation (Window-Level)
+Only if the frame passes the "Instant Checks" is it added to the **Sliding Window (Deque)**.
+* **Window Size:** 60 Frames (~2.0 seconds at 30fps).
+* **Pass Condition:** The window must be **FULL** (60 items).
+
+### C. Stability Check (The Final Gate)
+Once the window is full, we calculate the statistics of the 60 captured frames:
+1.  **Movement Variance:** Standard Deviation of Hip Coordinates must be < 0.015 (Normalized).
+2.  **Angle Consistency:** Standard Deviation of the Facing Angle must be low (user isn't spinning).
+
+## 3. OUTPUT: THE CALIBRATION PASSPORT
+If all checks pass, the Gatekeeper shuts down and issues a "Passport" containing:
+* `baseline_height`: Average torso length over the last 2 seconds.
+* `baseline_angle`: Average facing angle over the last 2 seconds.
+* `floor_y`: Average Y-coordinate of the heels (to detect heel lift later).
+
+## 4. USER FEEDBACK LOOP
+* **0-59 Frames:** "Hold still... (Progress Bar)"
+* **Fail Event:** "Resetting... [Reason]"
+* **60 Frames + Low Variance:** "System Ready. Begin!"

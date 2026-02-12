@@ -1,0 +1,31 @@
+# BENCH PRESS REP LOGIC: STRATEGY & SCORING
+# Version: 1.0
+
+## 1. CORE METRICS
+* **Vertical ROM:** % of Arm Length traveled. (Must verify lock-out).
+* **Horizontal Path:** The "Bar Drift" from Shoulder to Sternum.
+* **Stability:** Hip height variance and Foot variance.
+
+## 2. SCORING RULES (Start at 100)
+
+### Major Deductions (-10)
+1.  **"GLUTE_BRIDGE"**: Hip Y-coord rises > 10% of torso length above baseline.
+2.  **"ASYMMETRY"**: Left/Right Wrist Y-diff > 0.05 (Normalized).
+3.  **"UNSTABLE_FEET"**: Heel velocity > threshold during press.
+
+### Minor Deductions (-5)
+1.  **"BOUNCE"**: Instantaneous velocity flip at bottom > threshold.
+2.  **"FLARE"**: Upper Arm vs Torso Angle > 80 degrees.
+3.  **"BAD_PATH"**: Bar travels vertically (No horizontal component) OR Bar travels over face.
+4.  **"SHALLOW"**: Bar does not reach within 15% of chest depth.
+
+## 3. STATE MACHINE TRIGGERS
+* **START_REP**: Arms Extended (Angle > 160°) + Bar is Stable.
+* **DESCENDING**: Bar Velocity < 0.
+* **BOTTOM**: Velocity passes through 0 + Height is at local minimum.
+* **ASCENDING**: Bar Velocity > 0.
+* **END_REP**: Arms Extended (Angle > 160°) + Velocity ≈ 0.
+
+## 4. DATA INPUTS
+* `gatekeeper.calibration`: Contains `bench_y` (Shoulder Height) and `arm_length`.
+* `normalizer.process`: Returns `aligned_landmarks` (Shoulder-Anchored).

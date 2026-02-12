@@ -1,0 +1,34 @@
+# BENCH PRESS VISUALIZER: OBJECTIVES & STRATEGY
+# Version: 1.0
+
+## 1. THE PROBLEM: "INVISIBLE PHYSICS"
+In a Squat, the user can see if they are deep enough. In a Bench Press, the user cannot see two critical things:
+1.  **Bar Path:** They cannot see the "J-Curve" trajectory while lying down. They often press in a straight vertical line (Guillotine Press) without knowing it.
+2.  **Elbow Flare:** They cannot see if their elbows are drifting past 80° relative to their torso.
+
+## 2. THE SOLUTION: THE "FIGHTER PILOT" HUD
+The Visualizer creates an Augmented Reality overlay that reveals these hidden metrics.
+
+### A. The Bar Path Tracer (The "Comet Tail")
+* **Concept:** We draw a trailing line behind the bar (wrists) for the last 15-30 frames.
+* **Goal:** To show the *shape* of the movement.
+* **Visual Logic:**
+    * **Curve (J-Shape):** The natural, safe path.
+    * **Vertical Line:** The dangerous "Guillotine" path (Flagged Red).
+
+### B. The Elbow Flare Triangle (The "Danger Zone")
+* **Concept:** We draw a filled triangle connecting the **Shoulder**, **Elbow**, and **Hip**.
+* **Goal:** To visualize the "Armpit Gap."
+* **Visual Logic:**
+    * **Green/Transparent:** Elbows are tucked (< 75°). Safe.
+    * **Solid Red:** Elbows are flared (> 85°). Dangerous. This gives immediate peripheral feedback to the user ("I see Red under my arms -> Tuck elbows").
+
+### C. The Target Box (The "Rack" Position)
+* **Concept:** A semi-transparent target drawn over the **Shoulders**.
+* **Goal:** To guide the user's ascent.
+* **Instruction:** "Push the bar back into the Blue Box." This naturally forces the J-Curve without explaining physics.
+
+## 3. DATA LAYERING
+1.  **Skeleton Layer:** Draws lines between raw joints (Shoulders, Elbows, Wrists) so the user knows tracking is working.
+2.  **Data Layer:** Overlay the Tracer and Triangle on top of the video feed.
+3.  **Feedback Layer:** Text "Toast" messages (e.g., "TUCK ELBOWS!") centered on screen.

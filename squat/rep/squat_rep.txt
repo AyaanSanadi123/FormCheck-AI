@@ -1,0 +1,52 @@
+# SQUAT REP CLASS: OBJECTIVES & LOGIC
+# Version: 1.0
+
+## 1. CORE OBJECTIVE
+The `SquatRep` class is the "Logic Engine" of the application. It receives raw landmarks from MediaPipe, normalizes them via the `Normalizer` utility, and outputs a "Verdict" for every single repetition. It is responsible for the Rep Life Cycle, Biomechanical Analysis, and Fault Scoring.
+
+## 2. THE SCORING SYSTEM (The "Judge")
+Every rep starts with a **Perfect Score of 100**. Points are deducted based on detected faults.
+* **Safety Threshold:** Score < 70 = "BAD" (Red).
+* **Technique Threshold:** Score 70-90 = "OKAY" (Orange).
+* **Perfect Threshold:** Score > 90 = "GOOD" (Green).
+
+### Deductions
+* **-10 Points (Major/Safety):** Knee Valgus, Lumbar Rounding, Heel Lift, Asymmetry.
+* **-5 Points (Minor/Efficiency):** Shallow Depth, Fast Descent, Disjointed Ascent.
+
+## 3. THE PHASE-LOCKED DETECTION LOGIC
+To prevent false positives, checks are strictly bound to specific movement phases.
+
+### Phase A: DESCENT (Eccentric)
+* **Trigger:** Hip Angle breaks < 165°.
+* **Active Checks:**
+    1.  **Tempo:** Monitor vertical velocity of Hips. Limit: < 0.8 m/s.
+    2.  **Path:** Monitor Knee X-sway (Valgus).
+    3.  **Balance:** Monitor Heel Y-coordinates vs. Floor Baseline.
+
+### Phase B: BOTTOM (Amortization)
+* **Trigger:** Vertical Velocity ≈ 0 AND Hip Angle is at global minimum.
+* **Active Checks:**
+    1.  **Depth:** Compare `Hip_Y` vs `Knee_Y`.
+    2.  **Lumbar:** Compare Torso Angle vs. Thigh Angle.
+
+### Phase C: ASCENT (Concentric)
+* **Trigger:** Hip Angle increases > 10° from bottom.
+* **Active Checks:**
+    1.  **Coordination:** Compare Velocity(Hip) vs. Velocity(Shoulder).
+    2.  **Valgus:** Re-check Knee sway (common failure point under load).
+
+### Phase D: TOP (Lockout)
+* **Trigger:** Hip Angle > 165° AND Velocity ≈ 0.
+* **Action:** Finalize Score, Push to Log, Reset for next rep.
+
+## 4. DATA INPUTS
+* **`landmarks`**: Raw MediaPipe coordinates (for floor check & visualizer).
+* **`aligned_landmarks`**: Normalized 2D coordinates (for angle calculation).
+* **`calibration_data`**: User-specific baselines (Floor Y, Torso Length).
+
+## 5. OUTPUT
+Returns a `RepLog` dictionary containing:
+* `score`: Integer (0-100).
+* `faults`: List of strings (e.g., ["KNEE_VALGUS", "DEPTH_FAIL"]).
+* `metrics`: Raw data (Max Depth Angle, Time under Tension).

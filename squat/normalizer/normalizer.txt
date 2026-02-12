@@ -1,0 +1,42 @@
+# NORMALIZER: PROBLEM & SOLUTION STRATEGY
+# Version: 1.0
+
+## 1. THE CORE PROBLEM: PERSPECTIVE DISTORTION (The "2D Lie")
+Computer Vision models like MediaPipe provide highly accurate 2D coordinates (X, Y) but unreliable 3D depth (Z). When a user records a squat, they are rarely standing at a perfect 90-degree side profile relative to the camera.
+
+### The Consequence: Foreshortening
+If a user stands at a **65-degree angle** (oblique) instead of 90 degrees:
+1.  **Length Distortion:** The femur (thigh bone) appears "shorter" to the camera than it actually is.
+2.  **Angle Drift:** A knee bent at exactly 90 degrees (parallel) might mathematically appear to be at **110 degrees** on the 2D screen.
+3.  **False Negatives:** The logic will unfairly fail the user for "Not Hitting Depth" even if their form was perfect, simply because of the camera angle.
+
+## 2. THE SOLUTION: GEOMETRIC NORMALIZATION (The "Virtual Turntable")
+Instead of forcing the user to be perfect, we use linear algebra to **virtually rotate** the user's skeleton to the ideal view before analyzing their form.
+
+### The Logic
+We treat the human skeleton as a 3D object in a virtual space. By calculating the user's deviation from the ideal angle, we can apply a mathematical correction to "spin" them back to alignment.
+
+## 3. THE ALGORITHM
+
+### Step A: Measure the Deviation (The "Compass")
+We use the **Hips** as our anchor. In a perfect Side View, the Left Hip and Right Hip should align along the Z-axis (Depth).
+* **Input:** Raw World Coordinates (x, y, z).
+* **Math:** `Current_Angle = arctan((z_left - z_right) / (x_left - x_right))`
+* **Result:** We might find the user is facing **75 degrees** (15 degrees off-center).
+
+### Step B: The Rotation Matrix (The "Fix")
+We calculate a Rotation Matrix to correct this 15-degree error.
+* **Target:** 90 Degrees (Side View).
+* **Delta:** `Rotation_Needed = 90 - 75 = +15 degrees`.
+* **Formula:** We apply a standard 2D Rotation around the Y-axis (vertical axis) to every single joint in the body.
+    * `New_X = (Old_X * cos(θ)) - (Old_Z * sin(θ))`
+    * `New_Z = (Old_X * sin(θ)) + (Old_Z * cos(θ))`
+    * `New_Y` (Height) remains unchanged.
+
+### Step C: Projection
+We discard the noisy Z-data and use the new **`New_X`** and original **`Y`** coordinates.
+
+## 4. THE RESULT
+The `SquatRep` class receives a set of landmarks that look mathematically identical to a **Perfect 90-Degree Side View**.
+* **Consistency:** A squat recorded at 60°, 75°, or 90° will yield the exact same knee angle calculation.
+* **Fairness:** Users are graded on their **Biomechanics**, not their camera setup.
