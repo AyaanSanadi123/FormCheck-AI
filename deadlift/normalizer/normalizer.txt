@@ -1,0 +1,34 @@
+# DEADLIFT NORMALIZER: STRATEGY & MATH
+# Version: 1.0
+
+## 1. THE PROBLEM: "MESSY REALITY"
+In raw video, the coordinates are relative to the camera frame (pixels), not gravity or the lifter.
+* **Problem A (Mirroring):** A user facing Left (-1) moves in negative X. A user facing Right (+1) moves in positive X.
+* **Problem B (Floating Floor):** The floor is at arbitrary pixel height (e.g., Y=0.8), making it impossible to measure "Liftoff" or "Lockout Height" consistently.
+* **Problem C (Camera Tilt):** If the camera is slightly tilted, a vertical shin looks diagonal.
+
+## 2. THE SOLUTION: "LABORATORY CONDITIONS"
+The Normalizer transforms the messy video data into a standardized coordinate system where physics is consistent.
+
+### A. Standardization (The "Universal Soldier")
+We mathematically flip everyone to face **RIGHT (+1)**.
+* **Logic:** `Normalized_X = (Raw_X - Hip_Center_X) * Facing_Side`.
+* **Result:** Forward movement (towards toes) is always +X. Backward movement (towards heels) is always -X.
+
+### B. The "Zero Floor" Transformation
+We translate the vertical axis so the **Heel** is at Y=0.
+* **Logic:** `Normalized_Y = (Floor_Y - Raw_Y)`.
+* **Result:** * Y = 0.0 (Floor)
+    * Y = 0.4 (Knees)
+    * Y = 0.8 (Lockout)
+    * Gravity acts downwards (negative Y direction relative to lift).
+
+### C. Tilt Correction (Optional Advanced Step)
+If needed, we rotate the entire skeleton so the [Heel-Toe] vector is perfectly horizontal.
+* **Logic:** Calculate angle of foot relative to horizontal -> Rotate all points by -angle.
+* **Result:** A vertical line in our data is truly vertical against gravity.
+
+## 3. OUTPUT DATA STRUCTURE
+* **X-axis:** +X = Forward (Toes), -X = Backward (Heels).
+* **Y-axis:** +Y = Up (Height off floor), 0 = Floor.
+* **Origin:** (0,0) is the Heel/Ankle.

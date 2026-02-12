@@ -1,0 +1,25 @@
+# DEADLIFT GATEKEEPER: OBJECTIVES & LOGIC
+# Version: 1.0
+
+## 1. THE PROBLEM: "THE WEDGE" SETUP
+Unlike Squat (Standing) or Bench (Lying), the Deadlift starts in a specific "Crouch" position known as "The Wedge."
+* **Geometry:** The lifter forms a triangle with the floor.
+* **Hierarchy:** Shoulders must be higher than Hips, and Hips must be higher than Knees.
+* **Verticality:** The Shins must be near-vertical (80-100 degrees) to ensure the bar is over the mid-foot.
+
+## 2. THE ORIENTATION CHALLENGE
+Users can face Left (-90°) or Right (+90°).
+* **Issue:** The logic for "Bar Drift" (drift away from legs) depends entirely on which way the user is facing.
+* **Solution:** The Gatekeeper calculates the `facing_direction` (-1 for Left, +1 for Right) during the static hold and passes this to the Normalizer. This allows the Normalizer to mathematically "flip" Left-facing users so the Rep Logic only ever has to solve for one direction.
+
+## 3. THE VALIDATION CRITERIA
+The Gatekeeper will only issue a "GO" signal if:
+1.  **Visibility:** Feet, Knees, Hips, Shoulders, and Wrists are all visible (Full Kinetic Chain).
+2.  **Triangle Hierarchy:** `Shoulder.Y < Hip.Y < Knee.Y` (Remember Y is inverted/down).
+3.  **Arm Verticality:** The horizontal distance between Shoulder and Wrist is minimal (Arms hanging straight down).
+4.  **Stability:** The user holds this "Wedge" position for 1.5 seconds (45 frames) with low variance.
+
+## 4. OUTPUT (THE PASSPORT)
+* `floor_y`: The Y-coordinate of the Heels (Zero line).
+* `torso_length`: Distance between Shoulder and Hip (Scale factor).
+* `facing_side`: -1 (Left) or +1 (Right).
