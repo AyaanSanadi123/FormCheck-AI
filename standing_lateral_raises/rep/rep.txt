@@ -1,0 +1,57 @@
+================================================================
+LATERAL RAISE REP LOGIC: STRATEGY & SCORING
+# Version: 1.2 (Vector-Based Refinement)
+================================================================
+
+1. CORE METRICS
+---------------
+* Anatomical Abduction: The angle between the "Spine Vector" (Hip-to-
+  Shoulder) and the "Arm Vector" (Shoulder-to-Wrist).
+* Torso Ratio: The real-time Euclidean distance between shoulder 
+  and hip compared against the 'torso_baseline'.
+* Hip Drift: Horizontal (X) displacement of the pelvic center.
+* Angular Symmetry: The variance between Left and Right abduction.
+
+2. REFINED SCORING RULES (Start at 100)
+---------------------------------------
+
+Major Deductions (-15)
+1. "SHRUGGING": Detected when the Torso Ratio drops below 0.90 
+   (10% compression). This signifies the AC joint is moving toward 
+   the ear, engaging the Upper Traps over the Medial Deltoid.
+2. "SHALLOW": Peak abduction fails to reach 80°. Incomplete range 
+   of motion results in sub-optimal muscle fiber recruitment.
+3. "BODY_SWAY": Hip center deviates > 8% of total torso length. 
+   Indicates momentum-cheating via a "hip-flick."
+
+Minor Deductions (-10)
+1. "ASYMMETRY": A difference of > 15° between Left and Right arm 
+   elevation. Indicates neural drive imbalance or strength deficit.
+2. "CONTROL": Rapid downward velocity (Y-axis drop) suggesting 
+   gravity is doing the work instead of an eccentric contraction.
+
+
+
+3. VECTOR STATE MACHINE
+-----------------------
+* ASCENT: Triggered when (Arm_Vector · Spine_Vector) indicates 
+  an angle > 20° with negative Y-velocity.
+* PEAK: The point of maximum abduction where Y-velocity crosses 
+  zero. The "Shallow" check is performed here.
+* DESCENT: Positive Y-velocity (weights returning to floor).
+* COMPLETE: Angle returns to < 25° relative to the spine.
+
+4. DATA INPUTS
+--------------
+* gatekeeper.calibration: Provides 'torso_baseline' for the ratio 
+  denominator and 'neutral_hip_x' for sway monitoring.
+* normalizer.landmarks: Provides the X-Z rectified coordinates 
+  ensuring the Dot Product calculation is perspective-pure.
+
+
+
+NOTE: Version 1.2 uses the Dot Product to allow for "Scaption." If 
+the user raises dumbbells 30° in front of the frontal plane (the 
+natural plane of the scapula), the angle remains anatomically 
+accurate, preventing the "False Shallow" errors of 2D slope math.
+================================================================

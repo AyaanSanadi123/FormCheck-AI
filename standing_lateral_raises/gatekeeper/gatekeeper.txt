@@ -1,0 +1,59 @@
+================================================================
+LATERAL RAISE GATEKEEPER: OBJECTIVES & STRATEGY
+Version: 1.2 (Anatomical Scaling Refinement)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+The Gatekeeper establishes a "Body-Relative" baseline. By calculating 
+anatomical proportions (Torso and Arm lengths) instead of fixed pixel 
+coordinates, the system remains accurate regardless of camera distance, 
+user height, or slight forward leaning.
+
+2. THE VALIDATION PIPELINE
+--------------------------
+
+A. Frame-Level Rejection (Instant)
+- VISIBILITY: Shoulders, Hips, and Wrists must have confidence > 0.90.
+- PERSPECTIVE: Z-depth difference between Left/Right shoulders must 
+  be < 0.15. This ensures the "Anatomical Passport" isn't distorted 
+  by a rotated torso.
+- INITIAL POSTURE: Wrists must be vertically below the Hips. This 
+  ensures the "Resting Torso Length" is captured without deltoid 
+  contraction.
+
+
+
+B. Temporal Validation (Stability Window)
+- WINDOW SIZE: 45 Frames (~1.5 seconds).
+- REQUIREMENT: The Euclidean distance between the Shoulder and Hip 
+  must remain stable. If the user moves erratically, the buffer 
+  flushes to prevent a "noisy" baseline.
+
+3. THE CALIBRATION PASSPORT (Data Latch)
+----------------------------------------
+Upon successful validation, the following anatomical ratios are locked:
+
+* torso_baseline: The Euclidean distance (L^2 norm) from the Shoulder 
+  to the Hip. This serves as the "Vertical Anchor." 
+  - USE: If this distance decreases during a rep, it indicates the 
+    Shoulder is moving toward the Ear (SHRUGGING).
+* arm_length: The cumulative length of the arm segments. 
+  - USE: Used to calculate the radius of the abduction arc and 
+    normalize the 90-degree peak.
+* neutral_hip_x: The horizontal center-point of the pelvis.
+  - USE: Used to detect torso sway or momentum-cheating.
+
+
+
+4. USER FEEDBACK STRATEGY
+-------------------------
+* "Ensure your full body is visible": Triggered by landmark dropout.
+* "Face the camera directly": Triggered by Z-axis asymmetry.
+* "Analyzing Posture...": Visual indicator of the 45-frame window.
+
+NOTE: Version 1.2 moves away from "sh_y_baseline" as a primary check. 
+By using "torso_baseline," the system can differentiate between a 
+user who is leaning forward (constant torso length) and a user who 
+is shrugging (shortened torso-to-ear distance).
+================================================================

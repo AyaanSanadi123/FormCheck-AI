@@ -1,0 +1,63 @@
+================================================================
+LATERAL RAISE NORMALIZER: GEOMETRY STRATEGY
+# Version: 1.3 (Mid-Shoulder Pivot & Y-Lock)
+================================================================
+
+1. THE CORE OBJECTIVE: "SQUARING THE FRONTAL PLANE"
+--------------------------------------------------
+In a frontal-view exercise like the Lateral Raise, perspective 
+distortion is the primary cause of false "Asymmetry" flags. If a 
+user stands at a slight angle (e.g., 10° off-center), the arm 
+closer to the camera appears longer and higher in 2D space.
+
+The Normalizer creates a "Virtual Camera" that is always perfectly 
+perpendicular to the user's collarbone.
+
+2. REFINED ROTATION LOGIC
+-------------------------
+
+A. Mid-Shoulder Pivot Point (The "Anchor")
+- STRATEGY: Explicitly set the pivot of rotation to the midpoint 
+  between Left (11) and Right (12) shoulders.
+- RATIONALE: The lateral raise is a shoulder-centric movement. 
+  Anchoring the rotation here ensures that the "Torso Vector" 
+  and "Arm Vectors" remain concentric, preventing "pendulum 
+  swing" artifacts that occur if the pivot is at the feet or hips.
+
+
+
+B. X-Z Plane Rectification
+- STRATEGY: Calculate the 'Facing Angle' (Theta) using the 
+  Z-depth difference between shoulders.
+- ACTION: Apply an inverse rotation matrix to the X-Z (Floor) 
+  plane until the Facing Angle is 0.0°.
+- BENEFIT: Eliminates "Depth-shortening" where the 2D projection 
+  of a limb appears shorter because it is pointed toward or 
+  away from the lens.
+
+3. DATA INTEGRITY: THE "Y-AXIS LOCK"
+------------------------------------
+- CONSTRAINT: The Y-coordinate (Vertical/Gravity) is strictly 
+  excluded from the rotation matrix.
+- IMPACT: Because Y remains raw, the 'torso_baseline' (Shoulder-to-Hip 
+  vertical distance) captured by the Gatekeeper remains 
+  mathematically constant.
+- RESULT: This prevents the Normalizer from accidentally 
+  triggering "Shrug" faults through perspective rotation.
+
+4. TEMPORAL STABILIZATION
+-------------------------
+- METHOD: Exponential Moving Average (EMA) applied to the 
+  Correction Delta (the rotation angle).
+- ALPHA: 0.25 (Balances responsiveness with stability).
+- IMPACT: Prevents the entire skeleton from "shaking" due to 
+  minor Z-depth sensor flicker, providing a smooth feed for 
+  velocity calculations in the Rep Analyzer.
+
+
+
+NOTE: Version 1.3 ensures that the output landmarks are "Analysis-Ready." 
+By squaring the user, we ensure that:
+(Left_Wrist_X - Left_Sh_X) == (Right_Wrist_X - Right_Sh_X) 
+This makes symmetry detection a simple linear comparison.
+================================================================

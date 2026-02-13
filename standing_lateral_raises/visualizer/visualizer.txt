@@ -1,0 +1,58 @@
+================================================================
+LATERAL RAISE VISUALIZER: OBJECTIVES & STRATEGY
+# Version: 1.1 (Symmetry & Proportional HUD)
+================================================================
+
+1. THE CORE PROBLEM: "HIDDEN ASYMMETRY"
+---------------------------------------
+In a Lateral Raise, a user often believes their arms are level when 
+one is actually 10-15° lower. Traditional video doesn't highlight 
+this clearly. The Visualizer uses the Rectified Frontal Plane from 
+the Normalizer to make these micro-deviations visible.
+
+2. THE "SYMMETRY LEVELER" (Shoulder Bar)
+----------------------------------------
+- CONCEPT: A dynamic horizontal bar connecting the Left and Right 
+  acromion processes (Shoulder points).
+- GOAL: To provide a "Spirit Level" for the upper body.
+- VISUAL LOGIC:
+    * WHITE: Shoulders are stable and horizontal.
+    * YELLOW: Asymmetry detected (One arm lagging).
+    * RED: Shrugging detected (Torso compression > 10%).
+
+
+
+3. THE "WING ARCS" (Abduction Tracers)
+--------------------------------------
+- CONCEPT: Trailing comet-tails following the wrists.
+- GOAL: To visualize the "Path of Scaption."
+- VISUAL LOGIC:
+    * CYAN PATH: Standard movement arc.
+    * THICKNESS: The path is thicker at the wrist and tapers off, 
+      helping the user visualize the "width" of their raise.
+    * SYMMETRY CHECK: If the arcs are not concentric, the user 
+      can instantly see which side is losing range of motion.
+
+
+
+4. PROPORTIONAL HUD ELEMENTS
+----------------------------
+- ABDUCTION GAUGE: Displays the average angle (calculated via 
+  Vector Dot Product) at the center of the shoulder leveler.
+- MOMENTUM GLOW: If "BODY_SWAY" is flagged by the analyzer, the 
+  Hip-to-Ankle segments of the skeleton glow RED. This signals 
+  that the legs/hips are providing "cheated" momentum.
+
+5. FEEDBACK TOASTS (Coach's Voice)
+----------------------------------
+- "REACH SHOULDER HEIGHT": Triggered by the Shallow-Rep flag.
+- "KEEP SHOULDERS DOWN": Triggered by the Shrug-Ratio flag.
+- "STOP THE BODY SWING": Triggered by the Sway-Distance flag.
+
+
+
+NOTE: By using the Normalized landmarks, the Visualizer remains 
+"Perspective Pure." Even if the user is standing at a slight 
+angle to the lens, the AR overlays will appear perfectly squared 
+to their body.
+================================================================
