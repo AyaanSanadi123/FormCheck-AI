@@ -1,0 +1,26 @@
+# LAT PULLDOWN GATEKEEPER: OBJECTIVES & LOGIC
+# Version: 1.0
+
+## 1. THE VIEWPOINT: POSTERIOR (BACK VIEW)
+Unlike the other lifts, we need to analyze the user's back to check for symmetry.
+* **Problem:** MediaPipe is trained mostly on front views.
+* **Solution (Orientation Check):** We check the X-order of the shoulders.
+    * **Front View:** Left Shoulder (11) is on the Right side of the screen (`x > Right Shoulder`).
+    * **Back View:** Left Shoulder (11) is on the Left side of the screen (`x < Right Shoulder`).
+
+## 2. THE SETUP POSE: "THE Y-SHAPE"
+The user must be seated with arms fully extended overhead, holding the bar.
+* **Geometry:** `Wrist.Y < Shoulder.Y` (Remember Y=0 is Top).
+* **Symmetry:** The spine (Mid-Hip to Mid-Shoulder) must be vertical.
+
+## 3. THE VALIDATION CRITERIA
+The Gatekeeper will only issue a "GO" signal if:
+1.  **Visibility:** Shoulders, Elbows, Wrists, and Hips are visible.
+2.  **Back View Confirmed:** `Left_Shoulder.x < Right_Shoulder.x`.
+3.  **Arms Overhead:** Wrists are significantly above the nose/shoulders.
+4.  **Stability:** The user holds this "Stretch" position for 1.5 seconds.
+
+## 4. OUTPUT (THE PASSPORT)
+* `max_reach_y`: The average Y-coordinate of the wrists at full extension (This defines "0% Rep").
+* `spine_center_x`: The average X-coordinate of the spine (Used to center the Normalizer).
+* `shoulder_width`: Distance between shoulders (Used for scaling).

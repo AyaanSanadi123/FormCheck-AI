@@ -1,0 +1,52 @@
+# HAMSTRING CURL REP LOGIC: DETAILED PHYSICS & SCORING REPORT
+# Version: 1.0
+
+## 1. THE GEOMETRIC ENGINE: "KNEE-CENTRIC RADIAL MAPPING"
+The Hamstring Curl is a single-joint isolation movement. By anchoring the Knee at the origin (0,0) and scaling coordinates by the user's leg length (Tibia/Fibula), we transform a video feed into a pure angular tracking system.
+
+* **The Unit Circle:** The ankle traces a path through the upper-right quadrant. 
+* [cite_start]**Angle Calculation:** We use `arctan2(y, x)` to find the precise curl angle. [cite: 1]
+    * [cite_start]0°: Legs fully extended horizontally (parallel to the bench). [cite: 1]
+    * [cite_start]90°: Lower leg is perfectly vertical. [cite: 1]
+    * [cite_start]>90°: Peak contraction (ankle moving toward the glutes). [cite: 1]
+
+## 2. THE REP CYCLE (STATE MACHINE)
+The state machine monitors angular velocity to determine the phase of the exercise.
+
+### State 1: IDLE (Legs Extended)
+* [cite_start]**Goal:** Full stretch of the hamstring. [cite: 1]
+* [cite_start]**Trigger:** The system waits for a positive angular velocity > 15°/sec. [cite: 1]
+* [cite_start]**Reset Logic:** The system dynamically captures the starting angle to account for machine pads that don't allow for a perfectly flat 0° start. [cite: 1]
+
+### State 2: CURLING (Concentric Phase)
+* [cite_start]**Goal:** Pulling the weight toward the glutes. [cite: 1]
+* **Physics:** Angular velocity is positive. [cite_start]The ankle moves from X=1.0 toward X=0.0 and Y=1.0. [cite: 1]
+* **Peak Detection:** We track `max_curl_angle`. [cite_start]The moment the velocity flips negative (moving away from the body), we evaluate the ROM. [cite: 1]
+
+### State 3: RETURNING (Eccentric Phase)
+* [cite_start]**Goal:** Controlling the weight back to the starting position. [cite: 1]
+* [cite_start]**Physics:** Angular velocity is negative. [cite: 1]
+* [cite_start]**Completion:** The rep is finished when the ankle returns to < 25° relative to the knee. [cite: 1]
+
+---
+
+## 3. FAULT DETECTION HIERARCHY
+
+### Severe Deductions (-10 Points)
+1. **HIP_LIFT (The Momentum Cheat)**
+   * [cite_start]**The Problem**: Users often "hump" the machine pad, lifting their hips to create a better leverage angle or use momentum to move heavy weight. [cite: 1]
+   * [cite_start]**The Math**: We compare the live `Hip.y` against the `hip_baseline_y` captured during calibration. [cite: 1]
+   * [cite_start]**Trigger**: If the hips rise more than 0.15 torso units vertically during the pull phase. [cite: 1]
+
+### Minor Deductions (-5 Points)
+1. **SHORT_CURL (Limited ROM)**
+   * [cite_start]**The Problem**: Stopping the curl prematurely, usually due to fatigue or excessive weight. [cite: 1]
+   * **Trigger**: If the `max_curl_angle` is less than 80°. [cite_start]A quality rep should reach at least a vertical ankle position. [cite: 1]
+
+2. **NO_STRETCH (Bouncing/Partial Eccentric)**
+   * [cite_start]**The Problem**: Bouncing the weight at the bottom or failing to fully extend the legs, which removes tension from the hamstring. [cite: 1]
+   * [cite_start]**Trigger**: If a new concentric pull is detected before the ankle has reached the 25° extension threshold. [cite: 1]
+
+## 4. EDGE CASE ROBUSTNESS
+* [cite_start]**Velocity Smoothing**: We use a sliding window of 5 frames to average angular velocity. [cite: 1] [cite_start]This prevents "micro-reps" or state-flipping caused by MediaPipe landmark jitter. [cite: 1]
+* [cite_start]**First-Frame Guard**: By initializing `prev_ank_angle` as `None`, we ignore the very first frame of tracking to avoid a massive velocity spike that could false-trigger a rep. [cite: 1]

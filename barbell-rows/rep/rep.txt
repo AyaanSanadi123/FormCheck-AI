@@ -1,0 +1,25 @@
+# BARBELL ROW REP LOGIC: STRATEGY & SCORING
+# Version: 1.0
+
+## 1. THE REP CYCLE (Up-First)
+* **IDLE:** Bar is at the bottom (Dead Hang). Velocity is ~0.
+* **PULLING (Concentric):** Bar moves UP (+Y). Velocity > 0.
+* **RETURNING (Eccentric):** Bar moves DOWN (-Y). Velocity < 0.
+* **COMPLETE:** Bar returns to the Dead Hang height.
+
+## 2. THE GEOMETRY OF A "GOOD PULL"
+To measure if the user pulled the bar all the way to their stomach/chest, we calculate the shortest distance from the **Wrist** to the **Torso Line** (the line connecting the Shoulder and the Hip).
+* **Full Contraction:** Wrist gets very close to the Torso Line.
+
+## 3. FAULT HIERARCHY
+
+### Severe Deductions (-10 Points)
+1.  **"TORSO_HEAVE":** * *Concept:* Cheating the weight up by standing upright.
+    * *Trigger:* If the `Torso Angle` increases by more than 15° compared to the `setup_torso_angle` during the pull.
+
+### Minor Deductions (-5 Points)
+1.  **"SHORT_PULL":** * *Concept:* T-Rex arms. Not pulling the shoulder blades together to touch the bar to the body.
+    * *Trigger:* At the top of the pull (when velocity flips to negative), if the Wrist is still too far from the Torso Line.
+2.  **"NO_EXTENSION":**
+    * *Concept:* Not letting the bar return to a full dead hang before starting the next rep.
+    * *Trigger:* State finishes early because the user reversed direction before dropping back to the setup Y-coordinate.

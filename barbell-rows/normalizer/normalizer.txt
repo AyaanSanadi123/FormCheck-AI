@@ -1,0 +1,24 @@
+# BARBELL ROW NORMALIZER: STRATEGY & MATH
+# Version: 1.0
+
+## 1. THE ARCHITECTURAL REUSE
+The Barbell Row operates in the exact same spatial plane as the Deadlift (Strict Side View, feet anchored to the floor). Therefore, we apply the same normalization matrix.
+
+## 2. THE TRANSFORMATIONS
+We transform the messy video data into a standardized coordinate system where physics is consistent.
+
+### A. Standardization (The "Universal Soldier")
+We mathematically flip everyone to face **RIGHT (+1)**.
+* **Logic:** `Normalized_X = (Raw_X - Ankle_Center_X) * Facing_Side`.
+* **Result:** Forward movement (towards toes/head) is always +X. Backward movement (towards heels/glutes) is always -X.
+
+### B. The "Zero Floor" Transformation
+We translate the vertical axis so the **Heel** is at Y=0.
+* **Logic:** `Normalized_Y = (Floor_Y - Raw_Y)`.
+* **Result:** * Y = 0.0 (Floor)
+    * Gravity acts downwards (negative Y direction).
+    * Bar Height is a positive number.
+
+## 3. OUTPUT DATA STRUCTURE
+* **X-axis:** +X = Forward, -X = Backward. Origin (0) is the Ankle.
+* **Y-axis:** +Y = Up, 0 = Floor.

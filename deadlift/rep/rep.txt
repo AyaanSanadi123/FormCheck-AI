@@ -1,0 +1,25 @@
+# DEADLIFT REP LOGIC: STRATEGY & SCORING
+# Version: 1.0
+
+## 1. CORE METRICS (Normalized Space)
+* **Start Position:** We capture `Hip.y` and `Shoulder.y` at the exact moment of Liftoff.
+* **Vertical Delta:** `Current_Y - Start_Y`.
+* **Torso Length:** Used to normalize drift distances.
+
+## 2. THE "STRIPPER PULL" FORMULA
+The most critical check happens in the "First Pull" (0% to 40% height).
+* IF `Delta_Hip` > (`Delta_Shoulder` + Threshold):
+    * The hips are moving, but the shoulders are not.
+    * RESULT: The back angle is becoming horizontal.
+    * FAULT: Severe (-10).
+
+## 3. THE "BAR DRIFT" FORMULA
+The Normalizer sets the Ankles at X=0.
+* Ideally, `Bar.x` stays near 0 (Vertical path).
+* If `Bar.x` becomes positive (moving forward away from shins), leverage is lost.
+
+## 4. STATE MACHINE TRIGGERS
+* **IDLE**: `Bar.y` (Height) < 0.05.
+* **LIFTOFF**: `Bar.y` > 0.05. Capture Start Coordinates.
+* **LOCKOUT**: `Velocity` approx 0 AND `Bar.y` > 0.7 (High enough).
+* **COMPLETE**: `Bar.y` < 0.05 (Back on floor).

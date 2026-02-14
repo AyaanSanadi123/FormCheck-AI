@@ -1,0 +1,28 @@
+# BARBELL ROW GATEKEEPER: STRATEGY & LOGIC
+# Version: 1.0
+
+## 1. THE VIEWPOINT: STRICT SIDE PROFILE
+The Barbell Row requires a strict side view (70° to 110°). A front or back view completely hides the torso's angle relative to the floor, making it impossible to evaluate if the user is maintaining the isometric hip hinge or cheating by standing up.
+
+## 2. THE PROBLEM: "THE SETUP HEURISTICS"
+A poor setup in a Barbell Row compromises the entire set. If a user is too upright, it becomes a shrug. If their legs are completely straight, they risk severe lower back injury.
+
+* **Problem A (Torso Angle):** Users often stand at a 70° angle. We need them hinged over.
+* **Problem B (Knee Flexion):** Users either stiff-leg the movement or turn it into a deep squat hold.
+* **Problem C (Arm Verticality):** The bar must start in a "dead hang" directly below the shoulders.
+
+## 3. THE SOLUTION: MATHEMATICAL VALIDATION
+The Gatekeeper will enforce a rigid checklist before clearing the user to pull.
+
+1.  **Visibility:** Shoulders, Hips, Knees, Ankles, and Wrists must be clearly visible.
+2.  **The Hinge Check:** Calculate the angle of the `Shoulder -> Hip` vector relative to the floor.
+    * *Target:* Between 10° (Pendlay Row) and 60° (Yates Row).
+3.  **The Anchor Check:** Calculate the `Hip -> Knee -> Ankle` angle.
+    * *Target:* Between 120° and 175° (Athletic bend, not locked out, not squatting).
+4.  **The Dead Hang Check:** The horizontal X-distance between the Shoulder and the Wrist must be minimal (< 0.15 normalized units).
+5.  **Stability Buffer:** The user must hold this frozen isometric position for 1.5 seconds.
+
+## 4. OUTPUT (THE PASSPORT)
+* `facing_side`: -1 (Left) or +1 (Right) for the Normalizer.
+* `floor_y`: Ankle height to zero the gravity plane.
+* `setup_torso_angle`: The baseline angle captured at calibration. This is crucial for the Rep Logic to detect the "Torso Heave" (cheating by standing up).

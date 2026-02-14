@@ -1,0 +1,28 @@
+# SEATED ROW GATEKEEPER: STRATEGY & LOGIC
+# Version: 1.0
+
+## 1. THE VIEWPOINT: STRICT SIDE PROFILE
+The Seated Row (Cable or Machine) requires a strict side view. This is the only angle where we can accurately measure the two most critical mechanics: the horizontal pull of the arms and the vertical stability of the torso.
+
+## 2. THE PROBLEM: "THE SETUP HEURISTICS"
+Unlike standing lifts where gravity anchors the body to the floor, a seated row anchors the body at the hips and feet. We must ensure the user is actually seated, sitting upright, and reaching forward to grab the handle before we start tracking reps.
+
+* **Problem A (Not Seated):** The user might be standing or walking into the frame.
+* **Problem B (Poor Posture):** Starting the rep while slouched over or leaning entirely backward.
+* **Problem C (Arms Not Reaching):** Starting the tracker while the user is already holding the weight at their chest.
+
+## 3. THE SOLUTION: MATHEMATICAL VALIDATION
+The Gatekeeper will enforce a checklist to establish the "Upright Anchor" pose.
+
+1.  **Visibility:** Shoulders, Hips, Knees, and Wrists must be clearly visible. (Ankles are optional since footplates often hide them).
+2.  **The Seated Check:** Knees must be physically in front of the hips horizontally, indicating a seated, legs-forward position.
+3.  **The Torso Check:** Calculate the angle of the `Hip -> Shoulder` vector relative to the horizontal floor.
+    * *Target:* Between 65° and 115° (Allows for an upright posture with a slight forward stretch or slight backward lean).
+4.  **The Reach Check (Arms Forward):** The horizontal distance between the Shoulder and the Wrist must be significant (e.g., > 60% of Torso Length). This ensures they are holding the handle at full stretch.
+5.  **Stability Buffer:** Hold the stretched position for 1.5 seconds to prove they have braced their core.
+
+## 4. OUTPUT (THE PASSPORT)
+* `facing_side`: -1 (Left) or +1 (Right), determined by whether the wrists are to the left or right of the shoulders.
+* `hip_origin`: The X and Y coordinates of the hips to serve as the `(0,0)` anchor for the Normalizer.
+* `setup_torso_angle`: Captured to detect the "Momentum Swing" cheat later.
+* `torso_length`: For scaling distances.

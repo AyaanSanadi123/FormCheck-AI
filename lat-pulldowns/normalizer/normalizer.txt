@@ -1,0 +1,23 @@
+# LAT PULLDOWN NORMALIZER: STRATEGY & MATH
+# Version: 2.0 (With Yaw Correction)
+
+## 1. THE PROBLEM: OBLIQUE ANGLES (+/- 45 deg)
+* **Issue:** When viewing from an angle, the "far" side of the body appears compressed.
+* **Result:** A perfectly symmetric pull looks asymmetric in 2D pixels. One elbow path looks vertical, the other looks diagonal.
+
+## 2. THE SOLUTION: "VIRTUAL ROTATION"
+We use the 3D depth (Z) from MediaPipe to mathematically rotate the user until they are facing the camera perfectly.
+
+### Step A: Detect Yaw (Rotation Angle)
+* **Metric:** The slope of the line connecting Left Shoulder to Right Shoulder in the X-Z plane.
+* **Math:** `angle = arctan2(Left_Sh.z - Right_Sh.z, Left_Sh.x - Right_Sh.x)`.
+
+### Step B: Rotate to "Flat"
+* **Action:** Rotate all landmarks around the Spine Center (Y-axis) by `-angle`.
+* **Result:** Left Shoulder Z = Right Shoulder Z. The user is now "virtually" facing strictly away from the camera.
+
+### Step C: Center & Scale (Standardization)
+* Same as before: Center X on Spine, Scale by Shoulder Width.
+
+## 3. OUTPUT
+* A standardized "Paper Doll" skeleton that looks like a perfect 2D diagram, regardless of whether the camera was at 0°, 30°, or 45°.

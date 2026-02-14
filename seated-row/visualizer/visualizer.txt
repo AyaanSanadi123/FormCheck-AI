@@ -1,0 +1,24 @@
+# SEATED ROW VISUALIZER: STRATEGY & UX
+# Version: 1.0
+
+## 1. THE PROBLEM: "POSTURE BLINDNESS"
+When performing a seated row, the user is focused on pulling the handle to their stomach. They cannot see if their torso is remaining upright or if they are unconsciously turning the movement into a lower-back swing. The visualizer must make the invisible vertical plane obvious.
+
+## 2. THE VISUAL SOLUTIONS
+
+### A. The "Metronome" (Torso Tracker)
+* **Concept:** Since the hip is the anchor of the seated row, we draw a perfectly vertical "Reference Line" extending up from the hips. We then draw the user's actual spine (Hip to Shoulder).
+* **Visual:** Display the real-time torso angle in degrees.
+    * White/Green = Solid posture (spine stays near the reference line).
+    * Red = "MOMENTUM_SWING" fault triggered (spine swings too far past the reference).
+* **Why:** Instantly shows the user the exact degree of their "cheat" lean.
+
+### B. The Target Line (Distance to Torso)
+* **Concept:** A vertical dashed line representing the torso's physical boundary (the stomach/lower chest).
+* **Visual:** * Yellow = "SHORT_PULL" fault triggered.
+    * Cyan/Green = Good path.
+* **Why:** Provides a visual "finish line" for the handle.
+
+### C. The Horizontal Bar Path Tracer
+* **Concept:** A trailing line tracking the wrist's X/Y coordinates over the last 45 frames.
+* **Why:** Shows the user if they are pulling straight back, or if they are pulling downward/upward in an arc, which changes the muscle group being targeted.

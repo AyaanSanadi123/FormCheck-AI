@@ -1,0 +1,21 @@
+# SEATED ROW NORMALIZER: STRATEGY & MATH
+# Version: 1.0
+
+## 1. THE PROBLEM: "FLOATING FEET"
+In seated machine exercises, the feet are often placed on elevated footplates or are entirely obscured by the machine's central column. If we try to zero the Y-axis using the ankles (like we did for Deadlifts), the entire grid will fail.
+
+## 2. THE SOLUTION: "THE HIP ANCHOR"
+The only fixed point in a Seated Row is the seat itself. We will mathematically translate the entire skeleton so the user's Hips become the absolute center of the universe.
+
+### A. The Origin Shift
+* **Logic:** `Normalized_X = Raw_X - Hip_Origin_X`
+* **Logic:** `Normalized_Y = Hip_Origin_Y - Raw_Y` (Inverts MediaPipe's Y so UP is positive).
+* **Result:** The Hip is permanently at (0, 0). The head and shoulders will have positive Y values. The knees will have positive X values (once facing right).
+
+### B. Standardization (Facing Right)
+* We mathematically flip Left-facing users so everyone faces **RIGHT (+1)**.
+* **Result:** Forward movement (reaching for the cable) is always +X. Pulling the weight backward to the stomach is always -X (moving towards 0).
+
+## 3. OUTPUT DATA STRUCTURE
+* **X-axis:** Origin (0) is the Hip. +X is forward (towards the machine). -X is behind the back.
+* **Y-axis:** Origin (0) is the Hip. +Y is UP (Torso). -Y is DOWN (Seat/Legs).

@@ -1,0 +1,24 @@
+# HAMSTRING CURL VISUALIZER: STRATEGY & UX
+# Version: 1.0
+
+## 1. THE CHALLENGE: "ISOLATION FEEDBACK"
+In a lying hamstring curl, the user is prone and cannot see the machine or their legs. The visualizer must provide high-contrast feedback that emphasizes the two critical zones: the hip (stability) and the ankle (range of motion).
+
+## 2. THE VISUAL SOLUTIONS
+
+### A. The "Radial Protractor"
+* **Concept:** Since the knee is the origin (0,0), we draw a semi-transparent radial gauge. 
+* **Visual:** A circular arc trailing the ankle.
+    * White/Cyan = Active movement.
+    * Red = Top of the rep if "SHORT_CURL" is triggered.
+* **Why:** Clearly visualizes the 0° to 90°+ arc of the rep.
+
+### B. The "Hip Stability Bar"
+* **Concept:** A horizontal line drawn through the hip's starting baseline position.
+* **Visual:**
+    * Green = Hip is flush with the pad.
+    * Red = "HIP_LIFT" fault (The hip landmark has risen too far above the line).
+* **Why:** Alerts the user to the most common cheating mechanism (using the lower back).
+
+### C. Rep Progress HUD
+* **Concept:** A top-bar display for rep count and current form score.

@@ -1,0 +1,24 @@
+# DEADLIFT VISUALIZER: OBJECTIVES & STRATEGY
+# Version: 1.0
+
+## 1. THE "PLUMB LINE" (GRAVITY REFERENCE)
+* **Concept:** A deadlift fights gravity directly. The most efficient path is a straight vertical line over the mid-foot.
+* **Visual:** Draw a vertical dashed line starting from the Ankle (X=0 in normalized space) extending upwards.
+* **Feedback:** "Keep the bar on the dotted line."
+
+## 2. THE SPINE TRACKER (STRIPPER PULL VISUALIZATION)
+* **Concept:** Users can't feel when their hips shoot up too fast.
+* **Visual:** Draw a thick line connecting Shoulder to Hip.
+* **Logic:**
+    * **Green:** Normal ascent.
+    * **Red:** If "STRIPPER_PULL" fault is active. This gives immediate feedback on *why* the rep was bad ("Oh, my back line turned red at the bottom").
+
+## 3. THE BAR TRACER
+* **Concept:** Trailing history of the wrist position.
+* **Color Coding:**
+    * **Cyan/Green:** Vertical path.
+    * **Red:** Horizontal drift > Threshold.
+
+## 4. HUD ELEMENTS
+* **State:** (IDLE, PULL, LOCKOUT, DROP).
+* **Feedback:** Large text toast (e.g., "SQUEEZE GLUTES!").

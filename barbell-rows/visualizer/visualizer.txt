@@ -1,0 +1,25 @@
+# BARBELL ROW VISUALIZER: STRATEGY & UX
+# Version: 1.0
+
+## 1. THE PROBLEM: "BLIND SPOTS"
+In a Barbell Row, the lifter is bent over and staring at the floor. They cannot see their torso angle, nor can they easily gauge if the bar is touching their body or stopping short. The visualizer must provide striking post-set feedback on posture and range of motion.
+
+## 2. THE VISUAL SOLUTIONS
+
+### A. The "Hinge Protractor" (Torso Angle)
+* **Concept:** Draw the user's spine (Shoulder to Hip) and a horizontal reference line from the Hip to visually represent the bend angle.
+* **Visual:** Display the live angle in degrees next to the hip.
+    * White/Green = Good Hinge.
+    * Red = "TORSO_HEAVE" fault (They stood up to cheat the weight).
+* **Why:** Instantly shows the user if they lost their isometric lower-back tension.
+
+### B. The "Target Plane" (Distance to Torso)
+* **Concept:** The torso line acts as the "Finish Line" for the bar. 
+* **Visual:**
+    * Yellow = "SHORT_PULL" fault triggered (Bar stopped too far from the body).
+    * Cyan/Green = Good path.
+* **Why:** Gives absolute clarity on what constitutes a "full range of motion" rep (touching the stomach/chest).
+
+### C. The Bar Path Tracer
+* **Concept:** A trailing line behind the wrist.
+* **Why:** Depending on the row style (Pendlay vs. Yates), the bar path might be perfectly vertical or sweep back toward the hip. The tracer allows the user to visualize their specific pull mechanics.

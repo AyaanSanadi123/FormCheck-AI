@@ -1,0 +1,56 @@
+# SEATED ROW REP LOGIC: DETAILED PHYSICS & SCORING REPORT
+# Version: 2.0 (Expanded)
+
+## 1. THE COORDINATE SANDBOX: "TORSO UNITS"
+Before tracking a rep, we must understand the grid. Because the Normalizer shifts the origin to the user's **Hip (0,0)** and scales everything by their **Torso Length**, we are operating in a universal metric: the "Torso Unit" (TU).
+* **X-Axis (Horizontal):** The Hip is `0`. Reaching forward towards the cable machine is positive (`+X`).
+* **Y-Axis (Vertical):** The Hip is `0`. Up towards the head is positive (`+Y`).
+* **Distance:** A value of `1.0` means exactly one Torso Length. If a wrist is at `X = 0.8`, it is 80% of a torso length away from the hip.
+
+## 2. THE REP CYCLE (STATE MACHINE)
+The Seated Row tracks horizontal movement (X-axis) rather than vertical (Y-axis). 
+
+### State 1: IDLE (The Stretch)
+* **Biomechanics:** Arms are fully extended forward, lats are stretched, torso is braced.
+* **Math:** `Wrist.x` is at its maximum positive value (e.g., `+0.85`). Velocity is roughly `0`.
+* **Trigger to PULLING:** The smoothed horizontal velocity (`velocity_x`) drops below `-0.15` TU/sec (moving aggressively towards `0`), and the wrist moves at least `0.05` TU away from its furthest stretch point.
+
+### State 2: PULLING (Concentric Phase)
+* **Biomechanics:** Scapulae retract, elbows drive backward, handle approaches the stomach.
+* **Math:** `Wrist.x` decreases steadily towards `0`.
+* **Trigger to RETURNING:** Velocity crosses `0` and becomes positive `> 0.1` (the handle stops moving toward the body and starts getting pulled back to the machine).
+
+### State 3: RETURNING (Eccentric Phase)
+* **Biomechanics:** Lats control the weight as the arms straighten back to the starting position.
+* **Math:** `Wrist.x` increases steadily back towards its starting maximum.
+* **Trigger to IDLE (Completion):** `Wrist.x` reaches within `0.08` TU of the original starting stretch point. 
+* **Early Reversal (Failed Rep):** If velocity violently drops below `-0.15` before reaching the stretch point, the user is bouncing/half-repping the eccentric.
+
+---
+
+## 3. FAULT DETECTION MATRIX
+Our "Isolation Police" engine deducts points for form breakdown.
+
+### Severe Deductions (-10 Points)
+**1. MOMENTUM_SWING (The Lower Back Cheat)**
+* **The Cheat:** The user cannot pull the weight with their lats, so they lean back 45 degrees, using their entire body weight to yank the cable.
+* **The Math:** We track the `current_torso_angle` (angle of the Shoulder-Hip vector). If it exceeds the `setup_torso_angle` (captured by the Gatekeeper) by more than `15°`, or hits a hard limit of `110°` (leaning significantly backward), we flag it.
+
+### Minor Deductions (-5 Points)
+**1. SHORT_PULL (Incomplete Range of Motion)**
+* **The Cheat:** The weight is too heavy, so the user stops the handle 4 inches away from their stomach.
+* **The Math:** We track `min_wrist_x` during the PULLING state. If, at the moment the state transitions to RETURNING, the wrist is still `> 0.20` TU away from the hip (X=0), they missed the final contraction.
+
+**2. SHRUGGING (Upper Trap Dominance)**
+* **The Cheat:** Elevating the shoulders towards the ears instead of keeping them depressed and locked down.
+* **The Math:** We compare the current `Shoulder.y` to the `start_shoulder_y` captured at the beginning of the rep. If the shoulders rise by more than `0.10` TU vertically during the pull, they are shrugging the weight.
+
+**3. NO_STRETCH (Short Eccentric)**
+* **The Cheat:** Not letting the arms fully extend at the end of the rep to maintain constant tension, effectively doing rapid, bouncy half-reps.
+* **The Math:** If the state is RETURNING, but the user immediately initiates another PULLING phase (velocity flips negative) before the wrist reaches the original stretch zone, the rep is failed.
+
+---
+
+## 4. EDGE CASE HANDLING
+* **Micro-Jitters:** MediaPipe occasionally guesses the wrist position incorrectly for a single frame. We use a `deque(maxlen=5)` to average the horizontal velocity, preventing the state machine from hallucinating direction changes.
+* **Rep Drift:** Users rarely reach to the *exact* millimeter on every single rep. We use a dynamic `furthest_reach_x` variable that updates while IDLE, ensuring that if they inch slightly forward or backward on the seat between reps, the system adapts its bounds.

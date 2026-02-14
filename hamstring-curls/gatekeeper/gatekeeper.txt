@@ -1,0 +1,23 @@
+# HAMSTRING CURL GATEKEEPER: STRATEGY & LOGIC
+# Version: 1.0
+
+## 1. THE VIEWPOINT: STRICT SIDE PROFILE
+The Lying Leg Curl requires a side view to track the ankle's arc of motion and to monitor the vertical stability of the hips against the machine's pad.
+
+## 2. THE SETUP HEURISTICS
+We need to ensure the user is lying face down (prone) and the legs are fully extended before the set begins.
+
+* **Problem A (Not Lying Down):** The user might be standing or walking around.
+* **Problem B (Already Curled):** The user might have the weight already curled up when tracking starts.
+
+## 3. THE SOLUTION: MATHEMATICAL VALIDATION
+1.  **Visibility:** Shoulders, Hips, Knees, and Ankles must be clearly visible.
+2.  **The Prone Check:** The torso (`Shoulder -> Hip`) must be nearly horizontal. Angle < 25°.
+3.  **The Extension Check:** The leg (`Hip -> Knee -> Ankle`) must be mostly straight. Angle > 145°.
+4.  **Direction Check:** Since the user is lying down, we check if the Shoulders have a lower X value than the Hips (facing right) or vice versa.
+
+## 4. OUTPUT (THE PASSPORT)
+* `facing_side`: -1 (Left) or +1 (Right) for the Normalizer.
+* `knee_origin`: X and Y coordinates of the knees to serve as the pivot (0,0).
+* `hip_baseline_y`: To catch the "Hip Lift" cheat later.
+* `leg_length`: Distance from Knee to Ankle to scale the arc mathematically.

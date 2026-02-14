@@ -1,0 +1,23 @@
+# LAT PULLDOWN REP LOGIC: STRATEGY & SCORING
+# Version: 1.0
+
+## 1. DYNAMIC ROM (Range of Motion) TRACKING
+* **The "Zero Point":** Arms fully extended (Normalized Y = 0).
+* **The "Target Line":** The resting Y-coordinate of the Shoulders.
+* **The ROM Scale:** We define the distance from Zero to Target as "100% ROM".
+
+## 2. THE REP ZONES (At the Bottom of the Pull)
+When the user finishes the pull (velocity hits 0 and reverses), we check their `Max_Depth`:
+* **< 50% ROM:** Ignored (System resets silently, no "Rep Failed" penalty).
+* **50% - 85% ROM:** FLAG as "PARTIAL_REP" (Half-repping, missed the squeeze).
+* **> 85% ROM:** "Good Rep" (Accounts for fatigue/clavicle height).
+
+## 3. FAULT HIERARCHY
+
+### Severe (-10 Points)
+1.  **"ASYMMETRIC_PULL":** `abs(Left_Wrist.y - Right_Wrist.y) > 0.15` (One side pulling significantly more weight).
+2.  **"MOMENTUM_SWING":** Leaning back to use body weight. Measured by 2D foreshortening: if the vertical distance between Shoulders and Hips shrinks by > 15%, they are leaning back too far.
+
+### Minor (-5 Points)
+1.  **"PARTIAL_REP":** Stopping short of 85% ROM.
+2.  **"SHRUGGING":** Shoulders elevating (moving towards Y=0) during the concentric pull, indicating trap-dominance over lats.

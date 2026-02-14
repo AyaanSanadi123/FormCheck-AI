@@ -1,0 +1,21 @@
+# HAMSTRING CURL NORMALIZER: STRATEGY & MATH
+# Version: 1.0
+
+## 1. THE PROBLEM: "MACHINE ANGLES & BODY PROPORTIONS"
+Lying leg curl machines have different angled pads (some are flat, some have a distinct peak at the hips). Furthermore, a 6'5" user's ankle will move through a completely different pixel distance than a 5'2" user's ankle. 
+
+## 2. THE SOLUTION: "THE KNEE PIVOT"
+The Knee is the mechanical fulcrum of this exercise. We will translate the coordinate system to make the Knee the absolute center of the universe.
+
+### A. The Origin Shift
+* **Logic:** `Normalized_X = Raw_X - Knee_Origin_X`
+* **Logic:** `Normalized_Y = Knee_Origin_Y - Raw_Y` (Inverting MediaPipe's Y so UP is positive).
+* **Result:** The Knee is permanently at (0, 0). The Hips and Shoulders will sit in the negative X space (once flipped), and the Ankle will operate in the positive X space.
+
+### B. Standardization (Facing Right)
+* We mathematically flip Left-facing users so everyone faces **RIGHT (+1)**.
+* **Result:** The user's head is always to the Left (-X), and their feet extend to the Right (+X). 
+
+### C. The "Tibia Scale" (Unit Normalization)
+* **Logic:** Divide all distances by the `leg_length` (Knee to Ankle distance).
+* **Result:** A distance of `1.0` is exactly one lower-leg length. When fully extended, the ankle sits roughly at `X = +1.0, Y = 0.0`. When fully curled to 90 degrees, the ankle sits roughly at `X = 0.0, Y = +1.0`.

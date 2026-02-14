@@ -1,0 +1,28 @@
+# LAT PULLDOWN VISUALIZER: STRATEGY & UX
+# Version: 1.0
+
+## 1. THE PROBLEM: "INVISIBLE MECHANICS"
+Since the user is facing away from the camera, they cannot see the screen easily, and they certainly cannot see their own back. The visualizer must provide striking, instantly readable feedback for post-set review (or if they have a mirror setup).
+
+## 2. THE VISUAL SOLUTIONS
+
+### A. The "Spirit Level" (Bar Asymmetry)
+* **Concept:** Connect the Left Wrist and Right Wrist with a thick line.
+* **Visual:** * Green/Cyan = Level pull.
+    * Red = "ASYMMETRIC_PULL" fault triggered.
+* **Why:** Instantly shows the user if they are favoring their dominant arm.
+
+### B. The Spine Tracker (Momentum Lean)
+* **Concept:** A vertical line connecting the Mid-Shoulder to Mid-Hip.
+* **Visual:**
+    * White/Green = Strict posture.
+    * Red = "MOMENTUM_SWING" fault triggered.
+* **Why:** Demonstrates excessive leaning, even from a 2D back view, by highlighting the foreshortened torso.
+
+### C. The Target Zone & ROM Meter
+* **Concept:** A horizontal dashed line across the screen at Shoulder height, serving as the "Finish Line."
+* **Visual:** A vertical progress bar on the right side of the screen that fills up as the wrists approach the shoulder line.
+    * Red = < 50%
+    * Yellow = 50 - 85% (Partial Rep)
+    * Green = > 85% (Good Rep)
+* **Why:** Gives absolute clarity on what constitutes a "full range of motion" rep.
