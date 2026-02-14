@@ -11,7 +11,7 @@ class Landmark:
 class HamstringCurlNormalizer:
     def __init__(self):
         # Default state (will be updated by Gatekeeper calibration)
-        self.facing_side = 1.0  # 1.0 = Right, -1.0 = Left
+        self.active_side = "RIGHT" 
         self.knee_origin_x = 0.5 
         self.knee_origin_y = 0.5 
         self.leg_length = 1.0   # Scale factor (Tibia/Fibula length)
@@ -28,7 +28,7 @@ class HamstringCurlNormalizer:
 
         # 1. Update Calibration (Provided by Gatekeeper)
         if calibration_data:
-            self.facing_side = calibration_data.get('facing_side', 1.0)
+            self.active_side = calibration_data.get('active_side', "RIGHT")
             self.knee_origin_x = calibration_data.get('knee_origin_x', 0.5)
             self.knee_origin_y = calibration_data.get('knee_origin_y', 0.5)
             self.leg_length = calibration_data.get('leg_length', 1.0)
@@ -43,22 +43,31 @@ class HamstringCurlNormalizer:
         local_origin_y = self.knee_origin_y
         local_scale = self.leg_length
 
-        # Fallback if uncalibrated: calculate dynamically from current frame
+        # Fallback if uncalibrated: calculate dynamically from active knee
+        # (This is rare since Gatekeeper should pass data, but good for robustness)
         if calibration_data is None and self.knee_origin_x == 0.5:
-            l_knee = landmarks[25]
-            r_knee = landmarks[26]
-            local_origin_x = (get_attr(l_knee, 'x') + get_attr(r_knee, 'x')) / 2
-            local_origin_y = (get_attr(l_knee, 'y') + get_attr(r_knee, 'y')) / 2
+            # Simple heuristic fallback
+            if self.active_side == "LEFT":
+                knee = landmarks[25]
+                ankle = landmarks[27]
+            else:
+                knee = landmarks[26]
+                ankle = landmarks[28]
             
-            l_ankle = landmarks[27]
-            r_ankle = landmarks[28]
-            ank_x = (get_attr(l_ankle, 'x') + get_attr(r_ankle, 'x')) / 2
-            ank_y = (get_attr(l_ankle, 'y') + get_attr(r_ankle, 'y')) / 2
+            local_origin_x = get_attr(knee, 'x')
+            local_origin_y = get_attr(knee, 'y')
             
+            ank_x = get_attr(ankle, 'x')
+            ank_y = get_attr(ankle, 'y')
             local_scale = np.sqrt((ank_x - local_origin_x)**2 + (ank_y - local_origin_y)**2)
 
         # Prevent division by zero
         if local_scale < 0.001: local_scale = 1.0
+
+        # 3. Determine Facing Side (Flip if Left)
+        # If user is Left-Facing (Active Side Left), we flip X.
+        # This standardizes everyone to face RIGHT (+X).
+        facing_mult = -1.0 if self.active_side == "LEFT" else 1.0
 
         aligned = []
         for lm in landmarks:
@@ -72,7 +81,7 @@ class HamstringCurlNormalizer:
             
             # A. SHIFT ORIGIN, FLIP X, and SCALE
             # Result: Knee is (0,0). Feet are in +X direction. Head is in -X direction.
-            norm_x = ((x - local_origin_x) * self.facing_side) / local_scale
+            norm_x = ((x - local_origin_x) * facing_mult) / local_scale
 
             # B. SHIFT ORIGIN, INVERT Y, and SCALE
             # Result: Knee is (0,0). Up (towards the ceiling) is +Y.

@@ -7,19 +7,15 @@ class DeadliftGatekeeper:
     def __init__(self):
         # --- CONFIGURATION ---
         self.FPS = 30
-        self.REQUIRED_DURATION = 1.5  # Seconds (Deadlift setup is faster than bench)
-        self.BUFFER_SIZE = int(self.FPS * self.REQUIRED_DURATION) # 45 Frames
+        self.REQUIRED_DURATION = 1.5  # Seconds
+        self.BUFFER_SIZE = int(self.FPS * self.REQUIRED_DURATION) 
         
         # Thresholds
-        self.VISIBILITY_THRESH = 0.65
-        self.STABILITY_VARIANCE = 0.005 # For Hips (Must be still)
-        self.ARM_VERTICAL_TOLERANCE = 0.15 # Arms must hang somewhat straight
+        self.VISIBILITY_THRESH = 0.70
+        self.STABILITY_VARIANCE = 0.005 
         
         # The Sliding Window
         self.validation_buffer = deque(maxlen=self.BUFFER_SIZE)
-        self.is_calibrated = False
-        
-        # MediaPipe Indices
         self.MP_POSE = mp.solutions.pose.PoseLandmark
 
     def check(self, landmarks):
@@ -31,72 +27,69 @@ class DeadliftGatekeeper:
             self._reset("No user detected")
             return False, "Looking for lifter...", None
 
-        # --- STEP 1: VISIBILITY CHECK (Full Chain) ---
-        # Deadlift needs Feet(27-32), Hips(23,24), Shoulders(11,12), Wrists(15,16)
-        # We check primarily the side closer to camera later, but need basics now.
-        critical_indices = [
-            self.MP_POSE.LEFT_SHOULDER, self.MP_POSE.RIGHT_SHOULDER,
-            self.MP_POSE.LEFT_HIP, self.MP_POSE.RIGHT_HIP,
-            self.MP_POSE.LEFT_KNEE, self.MP_POSE.RIGHT_KNEE,
-            self.MP_POSE.LEFT_ANKLE, self.MP_POSE.RIGHT_ANKLE,
-            self.MP_POSE.LEFT_WRIST, self.MP_POSE.RIGHT_WRIST
-        ]
-        
-        for idx in critical_indices:
-            if landmarks[idx.value].visibility < self.VISIBILITY_THRESH:
-                self._reset(f"Joint {idx.name} hidden")
-                return False, "Full Body Visible?", None
+        # --- STEP 1: DETERMINE ACTIVE SIDE ---
+        # Compare visibility of Left vs Right Hips
+        left_vis = landmarks[self.MP_POSE.LEFT_HIP.value].visibility
+        right_vis = landmarks[self.MP_POSE.RIGHT_HIP.value].visibility
+        active_side = "LEFT" if left_vis > right_vis else "RIGHT"
 
-        # --- STEP 2: TRIANGLE HIERARCHY CHECK ---
+        # Select indices based on active side
+        if active_side == "LEFT":
+            idx_sh, idx_hip, idx_knee, idx_ankle = 11, 23, 25, 27
+            idx_wr = 15
+        else:
+            idx_sh, idx_hip, idx_knee, idx_ankle = 12, 24, 26, 28
+            idx_wr = 16
+
+        # --- STEP 2: VISIBILITY CHECK (Active Side) ---
+        # We need the full chain on the active side
+        critical_indices = [idx_sh, idx_hip, idx_knee, idx_ankle, idx_wr]
+        for idx in critical_indices:
+            if landmarks[idx].visibility < self.VISIBILITY_THRESH:
+                self._reset(f"Joint {idx} hidden")
+                return False, f"{active_side.title()} Side Visible?", None
+
+        # --- STEP 3: TRIANGLE HIERARCHY CHECK ---
         # Rule: Shoulders > Hips > Knees (In height/elevation)
         # MediaPipe Y: 0 is Top, 1 is Bottom.
-        # So: Shoulder Y < Hip Y < Knee Y
         
-        l_sh = landmarks[11]
-        l_hip = landmarks[23]
-        l_knee = landmarks[25]
-        
-        # We use average of Left/Right to be robust
-        avg_sh_y = (landmarks[11].y + landmarks[12].y) / 2
-        avg_hip_y = (landmarks[23].y + landmarks[24].y) / 2
-        avg_knee_y = (landmarks[25].y + landmarks[26].y) / 2
+        sh_y = landmarks[idx_sh].y
+        hip_y = landmarks[idx_hip].y
+        knee_y = landmarks[idx_knee].y
         
         # Check 1: Are Hips below Shoulders?
-        if avg_sh_y >= avg_hip_y:
+        if sh_y >= hip_y:
             self._reset("Hips too high")
             return False, "Lower your Hips", None
             
         # Check 2: Are Knees below Hips?
-        if avg_hip_y >= avg_knee_y:
+        if hip_y >= knee_y:
             self._reset("Squatting too deep")
             return False, "Raise Hips (Don't Squat)", None
 
-        # --- STEP 2.5: SHIN VERTICALITY CHECK ---
-        # Shins must be near-vertical (bar over mid-foot).
-        # Horizontal distance between Knee and Ankle should be minimal.
-        avg_knee_x = (landmarks[25].x + landmarks[26].x) / 2
-        avg_ankle_x = (landmarks[27].x + landmarks[28].x) / 2
+        # --- STEP 4: SHIN VERTICALITY CHECK ---
+        # Active Knee vs Active Ankle X
+        knee_x = landmarks[idx_knee].x
+        ankle_x = landmarks[idx_ankle].x
         
-        # Using a tolerance similar to arm verticality
-        if abs(avg_knee_x - avg_ankle_x) > 0.10: 
+        if abs(knee_x - ankle_x) > 0.10: 
             self._reset("Shins too angled")
             return False, "Shins Vertical (Hips Back)", None
 
-        # --- STEP 3: ARM VERTICALITY CHECK ---
-        # Arms should hang straight down in setup. 
-        # X-distance between Shoulder and Wrist should be small.
-        avg_sh_x = (landmarks[11].x + landmarks[12].x) / 2
-        avg_wrist_x = (landmarks[15].x + landmarks[16].x) / 2
+        # --- STEP 5: ARM VERTICALITY CHECK ---
+        # Active Shoulder vs Active Wrist X
+        sh_x = landmarks[idx_sh].x
+        wr_x = landmarks[idx_wr].x
         
-        if abs(avg_sh_x - avg_wrist_x) > self.ARM_VERTICAL_TOLERANCE:
+        if abs(sh_x - wr_x) > 0.15:
             self._reset("Arms not vertical")
             return False, "Arms Straight Down", None
 
-        # --- STEP 4: STABILITY BUFFER ---
-        # We track Hip Y to ensure they are holding the "Wedge"
+        # --- STEP 6: STABILITY BUFFER ---
         frame_metrics = {
-            "hip_y": avg_hip_y,
-            "ankle_y": (landmarks[27].y + landmarks[28].y) / 2, # Floor height
+            "active_side": active_side,
+            "hip_y": hip_y,
+            "ankle_y": landmarks[idx_ankle].y, # Floor height
             "timestamp": time.time()
         }
         self.validation_buffer.append(frame_metrics)
@@ -105,57 +98,43 @@ class DeadliftGatekeeper:
             progress = int((len(self.validation_buffer) / self.BUFFER_SIZE) * 100)
             return False, f"Hold Position... {progress}%", None
 
-        if not self._is_stable():
+        if not self._is_stable(active_side):
             return False, "Stay Still...", None
 
-        # --- STEP 5: SUCCESS / CALIBRATION ---
-        calibration_data = self._generate_passport(landmarks)
+        # --- STEP 7: SUCCESS / CALIBRATION ---
+        calibration_data = self._generate_passport(landmarks, active_side)
         return True, "DEADLIFT READY!", calibration_data
 
     def _reset(self, reason):
         self.validation_buffer.clear()
 
-    def _is_stable(self):
+    def _is_stable(self, current_side):
         """Checks if Hips have been still."""
+        if self.validation_buffer[0]['active_side'] != current_side:
+            self.validation_buffer.clear()
+            return False
+
         hip_history = [m['hip_y'] for m in self.validation_buffer]
         if np.var(hip_history) > self.STABILITY_VARIANCE:
             return False
         return True
 
-    def _generate_passport(self, landmarks):
+    def _generate_passport(self, landmarks, active_side):
         """Captures user dimensions."""
-        # Calculate Floor Level (Average Ankle Y)
+        # Calculate Floor Level (Average Ankle Y of active side)
         floor_y = np.mean([m['ankle_y'] for m in self.validation_buffer])
         
+        if active_side == "LEFT":
+            sh = landmarks[11]; hip = landmarks[23]
+        else:
+            sh = landmarks[12]; hip = landmarks[24]
+        
         # Calculate Torso Length (Shoulder to Hip)
-        avg_sh_x = (landmarks[11].x + landmarks[12].x) / 2
-        avg_sh_y = (landmarks[11].y + landmarks[12].y) / 2
-        avg_hip_x = (landmarks[23].x + landmarks[24].x) / 2
-        avg_hip_y = (landmarks[23].y + landmarks[24].y) / 2
-        
-        torso_length = np.sqrt((avg_sh_x - avg_hip_x)**2 + (avg_sh_y - avg_hip_y)**2)
-        
-        # Determine Facing Side (Left or Right)
-        # If Nose X < Hip X, likely facing Left (assuming standard setup)
-        # Better: Use the side-facing logic from Bench Gatekeeper
-        facing_side = self._detect_facing_side(landmarks)
+        torso_length = np.sqrt((sh.x - hip.x)**2 + (sh.y - hip.y)**2)
         
         return {
+            "active_side": active_side,
             "floor_y": floor_y,
             "torso_length": torso_length,
-            "facing_side": facing_side,
             "calibrated_at": time.time()
         }
-
-    def _detect_facing_side(self, landmarks):
-        """Returns -1 for Left, 1 for Right."""
-        # Standard side-view heuristic: Nose X vs Mid-Hip X
-        # If Nose is to the left of Hips, user is facing Left (-1).
-        # If Nose is to the right of Hips, user is facing Right (1).
-        
-        nose_x = landmarks[0].x
-        hip_center_x = (landmarks[23].x + landmarks[24].x) / 2
-        
-        if nose_x < hip_center_x:
-            return -1 # Facing Left
-        return 1 # Facing Right

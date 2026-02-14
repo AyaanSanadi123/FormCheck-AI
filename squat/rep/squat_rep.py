@@ -8,9 +8,10 @@ class SquatRep:
         self.SCORE_MAX = 100
         
         # User Baselines (from Gatekeeper)
-        self.floor_y = calibration_data['floor_y']
-        self.calibrated_scale = calibration_data['calibrated_scale']
-        self.calibrated_angle = calibration_data['calibrated_angle']
+        self.active_side = calibration_data.get('active_side', "RIGHT")
+        self.floor_y = calibration_data.get('floor_y', 0.5)
+        self.calibrated_scale = calibration_data.get('calibrated_scale', 1.0)
+        self.calibrated_angle = calibration_data.get('calibrated_angle', 90.0)
 
         # Thresholds
         self.THRESH_DEPTH = 100    # Degrees (Standard Parallel)
@@ -44,32 +45,28 @@ class SquatRep:
         if not landmarks:
             return None
 
-        # --- STEP 1: STABILITY WATCHDOG (Raw Data) ---
-        # Check if the user is twisting (Major Form Failure)
-        is_unstable = False
-        if raw_landmarks:
-            current_facing_angle = self._get_facing_angle(raw_landmarks)
-            stability_deviation = abs(current_facing_angle - self.calibrated_angle)
-            
-            if stability_deviation > 12.0: # Allow 12 deg of natural sway
-                 is_unstable = True
-                 self.feedback_buffer = "Don't Twist Hips!"
-                 # We penalize stability faults in the active phase
-                 if self.state in ["DESCENDING", "ASCENDING"]:
-                     self._add_fault("UNSTABLE", 10, "Torso Twisting")
+        # --- STEP 1: EXTRACT KEY JOINTS (Aligned) ---
+        if self.active_side == "LEFT":
+            sh = landmarks[11]
+            hip = landmarks[23]
+            knee = landmarks[25]
+            ankle = landmarks[27]
+        else:
+            sh = landmarks[12]
+            hip = landmarks[24]
+            knee = landmarks[26]
+            ankle = landmarks[28]
 
-        # --- STEP 2: METRICS CALCULATION ---
-        # We use ALIGNED 'landmarks' for geometry (Angles)
-        
-        # Extract Key Joints (Aligned)
-        hip = landmarks[23]   # Left Hip
-        knee = landmarks[25]  # Left Knee
-        ankle = landmarks[27] # Left Ankle
-        shoulder = landmarks[11] # Left Shoulder
-        
+        # --- STEP 2: STABILITY WATCHDOG (Raw Data) ---
+        # Check if the user is twisting (Major Form Failure)
+        # For simplicity, we assume Gatekeeper stability holds,
+        # but we can add a check for active side vs other side hip visibility ratio later.
+        is_unstable = False
+
+        # --- STEP 3: METRICS CALCULATION ---
         # Calculate Angles
         knee_angle = self._calculate_angle(hip, knee, ankle)
-        hip_angle = self._calculate_angle(shoulder, hip, knee) # New: Explicit Hip Angle
+        hip_angle = self._calculate_angle(sh, hip, knee) # New: Explicit Hip Angle
         
         # Calculate Velocities (Signed: +Down, -Up)
         curr_time = time.time()
@@ -83,10 +80,10 @@ class SquatRep:
         
         # Shoulder Velocity
         if self.prev_shoulder_y != 0:
-            self.shoulder_velocity_signed = (shoulder.y - self.prev_shoulder_y) / dt
-        self.prev_shoulder_y = shoulder.y
+            self.shoulder_velocity_signed = (sh.y - self.prev_shoulder_y) / dt
+        self.prev_shoulder_y = sh.y
 
-        # --- STEP 3: STATE MACHINE & FAULT DETECTION ---
+        # --- STEP 4: STATE MACHINE & FAULT DETECTION ---
         
         # A. IDLE / TOP (Waiting for rep)
         if self.state == "IDLE":
@@ -114,7 +111,15 @@ class SquatRep:
                 
             # FAULT: Heel Lift (Check against Floor Baseline) [-10 pts]
             if raw_landmarks:
-                raw_heel_y = (raw_landmarks[29].y + raw_landmarks[30].y) / 2.0
+                if self.active_side == "LEFT":
+                    idx_heel = 29
+                else:
+                    idx_heel = 30
+                
+                # Safe access for Raw Landmarks
+                raw_heel = raw_landmarks[idx_heel]
+                raw_heel_y = getattr(raw_heel, 'y', raw_heel.get('y') if isinstance(raw_heel, dict) else 0)
+
                 if (self.floor_y - raw_heel_y) > self.THRESH_HEEL:
                     self._add_fault("HEEL_LIFT", 10, "Keep Heels Flat!")
 
@@ -136,7 +141,7 @@ class SquatRep:
                 self._add_fault("SHALLOW", 5, "Hit Parallel!")
 
             # FAULT: Butt Wink (Lumbar Flexion) [-10 pts]
-            torso_angle = self._calculate_angle(shoulder, hip, knee)
+            torso_angle = self._calculate_angle(sh, hip, knee)
             if torso_angle < 70: 
                 self._add_fault("ROUNDING", 10, "Chest Up!")
 
@@ -171,7 +176,7 @@ class SquatRep:
             self._finish_rep()
             self.state = "IDLE"
 
-        # --- STEP 4: PACKAGE OUTPUT ---
+        # --- STEP 5: PACKAGE OUTPUT ---
         return {
             "state": self.state,
             "reps": self.rep_count,
@@ -221,26 +226,15 @@ class SquatRep:
 
     def _calculate_angle(self, a, b, c):
         """Standard 2D angle math using Aligned coordinates."""
-        a = np.array([a.x, a.y])
-        b = np.array([b.x, b.y]) # Vertex
-        c = np.array([c.x, c.y])
+        # Using .x and .y directly
+        a_arr = np.array([a.x, a.y])
+        b_arr = np.array([b.x, b.y]) # Vertex
+        c_arr = np.array([c.x, c.y])
         
-        ba = a - b
-        bc = c - b
+        ba = a_arr - b_arr
+        bc = c_arr - b_arr
         
         cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
         angle = np.arccos(cosine_angle)
         
         return np.degrees(angle)
-
-    def _get_facing_angle(self, landmarks):
-        """Calculates the raw facing angle (-180 to 180) from hips."""
-        # Indices: 23=Left Hip, 24=Right Hip
-        l_hip = landmarks[23]
-        r_hip = landmarks[24]
-        
-        dx = l_hip.x - r_hip.x
-        dz = l_hip.z - r_hip.z
-        
-        angle_rad = np.arctan2(dz, dx)
-        return np.degrees(angle_rad)

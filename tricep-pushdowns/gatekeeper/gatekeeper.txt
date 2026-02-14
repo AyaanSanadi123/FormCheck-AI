@@ -1,0 +1,17 @@
+# TRICEP PUSHDOWN GATEKEEPER: STRATEGY & LOGIC
+# Version: 1.0
+
+## 1. THE SETUP HEURISTICS
+The user must establish a strict starting position before we begin tracking. They should be standing, holding the cable attachment at the top of the movement (elbows fully bent), with their upper arm pinned to their side.
+
+## 2. THE MATHEMATICAL VALIDATION
+1.  **Visibility:** Shoulders, Hips, Elbows, and Wrists must be visible.
+2.  **The Flexion Check (Starting ROM):** The elbow must be fully bent, ready to push down. The angle of `Shoulder -> Elbow -> Wrist` must be less than 100°.
+3.  **Upper Arm Posture:** The elbow must be physically below the shoulder (Y-axis), proving the arm is hanging down, not raised in front of them like a front raise.
+4.  **Direction Check:** Compare the Wrist's X-coordinate to the Shoulder/Hip to determine if they face Left or Right.
+
+## 3. OUTPUT (THE PASSPORT)
+* `facing_side`: -1 (Left) or +1 (Right).
+* `shoulder_origin`: X and Y coordinates of the shoulders to serve as (0,0).
+* `baseline_elbow_x` & `baseline_elbow_y`: The exact resting coordinate of the elbow. If it deviates from this during the rep, we trigger the "ELBOW_SWING" fault.
+* `upper_arm_length`: Distance from Shoulder to Elbow, used to scale the grid to "Arm Units".

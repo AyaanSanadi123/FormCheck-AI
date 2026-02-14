@@ -7,6 +7,7 @@ class SeatedRowRep:
         self.SCORE_MAX = 100
         
         # Baselines from Gatekeeper
+        self.active_side = calibration_data.get('active_side', "RIGHT")
         self.setup_torso_angle = calibration_data.get('setup_torso_angle', 90.0)
         
         # State Management
@@ -25,20 +26,23 @@ class SeatedRowRep:
         self.start_wrist_x = 0.0
         self.min_wrist_x = 999.0 # Tracks how close the bar gets to the body
         self.furthest_reach_x = 0.0 # Tracks the stretch
+        self.start_shoulder_y = 0.0
 
     def process(self, landmarks, raw_landmarks=None):
         if not landmarks:
             return None
 
-        # --- STEP 1: EXTRACT JOINTS (Normalized) ---
-        # Hip is (0,0). User faces RIGHT. Up is +Y.
-        l_sh = landmarks[11]; r_sh = landmarks[12]
-        l_wr = landmarks[15]; r_wr = landmarks[16]
+        # --- STEP 1: EXTRACT JOINTS (Active Side) ---
+        if self.active_side == "LEFT":
+            idx_sh, idx_wr = 11, 15
+        else:
+            idx_sh, idx_wr = 12, 16
+
+        sh = landmarks[idx_sh]
+        wr = landmarks[idx_wr]
         
-        sh_x = (l_sh.x + r_sh.x) / 2
-        sh_y = (l_sh.y + r_sh.y) / 2
-        wr_x = (l_wr.x + r_wr.x) / 2
-        wr_y = (l_wr.y + r_wr.y) / 2
+        sh_x, sh_y = sh.x, sh.y
+        wr_x, wr_y = wr.x, wr.y
 
         # Handle first frame to avoid velocity spike
         if self.prev_wrist_x is None:
@@ -92,6 +96,7 @@ class SeatedRowRep:
                 self._add_fault("MOMENTUM_SWING", 10, "Don't lean back! Keep torso still.")
                 
             # FAULT: Shrugging (Shoulders moving up relative to hip/start)
+            # Normalized Y increases UPWARDS. So Shrugging = Higher Y.
             if sh_y > (self.start_shoulder_y + 0.1): # 0.1 torso units up
                 self._add_fault("SHRUGGING", 5, "Keep shoulders down!")
 

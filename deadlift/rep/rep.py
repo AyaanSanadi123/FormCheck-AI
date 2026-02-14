@@ -9,6 +9,7 @@ class DeadliftRep:
         
         # User Baselines (from Gatekeeper/Normalizer)
         # Note: Normalizer ensures Floor Y = 0.
+        self.active_side = calibration_data.get('active_side', "RIGHT")
         self.torso_length = calibration_data.get('torso_length', 1.0)
         
         # Thresholds (Normalized Units)
@@ -42,14 +43,11 @@ class DeadliftRep:
         if not landmarks:
             return None
 
-        # --- STEP 1: EXTRACT KEY JOINTS (Normalized) ---
-        # 11=L_Sh, 23=L_Hip, 25=L_Knee, 27=L_Ankle, 15=L_Wrist
-        # We average Left/Right to be robust.
-        shoulder = self._get_midpoint(landmarks[11], landmarks[12])
-        hip = self._get_midpoint(landmarks[23], landmarks[24])
-        knee = self._get_midpoint(landmarks[25], landmarks[26])
-        ankle = self._get_midpoint(landmarks[27], landmarks[28])
-        wrist = self._get_midpoint(landmarks[15], landmarks[16])
+        # --- STEP 1: EXTRACT KEY JOINTS (Normalized & Active) ---
+        if self.active_side == "LEFT":
+            sh = landmarks[11]; hip = landmarks[23]; knee = landmarks[25]; ankle = landmarks[27]; wrist = landmarks[15]
+        else:
+            sh = landmarks[12]; hip = landmarks[24]; knee = landmarks[26]; ankle = landmarks[28]; wrist = landmarks[16]
         
         # --- STEP 2: CALCULATE METRICS ---
         
@@ -63,7 +61,7 @@ class DeadliftRep:
         self.prev_bar_y = bar_height
 
         # C. Joint Angles
-        hip_angle = self._calculate_angle(shoulder, hip, knee)
+        hip_angle = self._calculate_angle(sh, hip, knee)
         knee_angle = self._calculate_angle(hip, knee, ankle)
         
         # --- STEP 3: STATE MACHINE ---
@@ -74,7 +72,7 @@ class DeadliftRep:
             
             # TRIGGER: Bar rises above floor threshold
             if bar_height > self.THRESH_LIFTOFF:
-                self._start_rep(hip.y, shoulder.y)
+                self._start_rep(hip.y, sh.y)
                 self.state = "ASCENDING"
 
         # B. ASCENDING (The Pull)
@@ -95,7 +93,7 @@ class DeadliftRep:
             # Logic: If Hips rise X amount, Shoulders MUST rise X amount.
             if bar_height < (self.torso_length * 0.4):
                 delta_hip = hip.y - self.start_hip_y
-                delta_sh = shoulder.y - self.start_sh_y
+                delta_sh = sh.y - self.start_sh_y
                 
                 # If Hips moved up significantly more than Shoulders
                 # (e.g., Hips up 20cm, Shoulders up 5cm -> Back is flattening)
@@ -121,7 +119,7 @@ class DeadliftRep:
                 
             # FAULT 5: Over-Extension (Leaning back too far)
             # Check if Shoulder X is behind Hip X (negative X relative to hip)
-            if shoulder.x < (hip.x - 0.15):
+            if sh.x < (hip.x - 0.15):
                 self._add_fault("OVER_EXTEND", 5, "Don't Lean Back!")
 
             # TRANSITION: Bar starts going down
@@ -179,17 +177,6 @@ class DeadliftRep:
             self.rep_count += 1
         else:
             self.feedback_buffer = "Rep Failed (Bad Form)"
-
-    def _get_midpoint(self, p1, p2):
-        class Point:
-            def __init__(self, x, y): self.x, self.y = x, y
-        # Handle robustness if p1 or p2 are dicts or objects
-        x1 = getattr(p1, 'x', p1.get('x')) if hasattr(p1, 'x') or isinstance(p1, dict) else 0
-        y1 = getattr(p1, 'y', p1.get('y')) if hasattr(p1, 'y') or isinstance(p1, dict) else 0
-        x2 = getattr(p2, 'x', p2.get('x')) if hasattr(p2, 'x') or isinstance(p2, dict) else 0
-        y2 = getattr(p2, 'y', p2.get('y')) if hasattr(p2, 'y') or isinstance(p2, dict) else 0
-        
-        return Point((x1 + x2)/2, (y1 + y2)/2)
 
     def _calculate_angle(self, a, b, c):
         ba = np.array([a.x - b.x, a.y - b.y])

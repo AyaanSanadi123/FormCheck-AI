@@ -7,6 +7,7 @@ class BarbellRowRep:
         self.SCORE_MAX = 100
         
         # Baselines from Gatekeeper
+        self.active_side = calibration_data.get('active_side', "RIGHT")
         self.setup_torso_angle = calibration_data.get('setup_torso_angle', 45.0)
         self.torso_length = calibration_data.get('torso_length', 1.0)
         
@@ -32,18 +33,15 @@ class BarbellRowRep:
         if not landmarks:
             return None
 
-        # --- STEP 1: EXTRACT JOINTS (Normalized) ---
-        # Normalizer centers X on Ankles, Y=0 is Floor, +Y is UP.
-        l_sh = landmarks[11]; r_sh = landmarks[12]
-        l_hip = landmarks[23]; r_hip = landmarks[24]
-        l_wr = landmarks[15]; r_wr = landmarks[16]
+        # --- STEP 1: EXTRACT JOINTS (Normalized & Active) ---
+        if self.active_side == "LEFT":
+            sh = landmarks[11]; hip = landmarks[23]; wr = landmarks[15]
+        else:
+            sh = landmarks[12]; hip = landmarks[24]; wr = landmarks[16]
         
-        sh_x = (l_sh.x + r_sh.x) / 2
-        sh_y = (l_sh.y + r_sh.y) / 2
-        hip_x = (l_hip.x + r_hip.x) / 2
-        hip_y = (l_hip.y + r_hip.y) / 2
-        wr_x = (l_wr.x + r_wr.x) / 2
-        wr_y = (l_wr.y + r_wr.y) / 2
+        sh_x, sh_y = sh.x, sh.y
+        hip_x, hip_y = hip.x, hip.y
+        wr_x, wr_y = wr.x, wr.y
 
         # --- STEP 2: CALCULATE METRICS ---
         # A. Smoothed Velocity (UP is Positive)
@@ -169,7 +167,7 @@ class BarbellRowRep:
         # Numerator: |(x2 - x1)(y1 - y0) - (x1 - x0)(y2 - y1)|
         num = abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1))
         # Denominator: sqrt((x2 - x1)^2 + (y2 - y1)^2)
-        den = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+        den = np.sqrt((x2 - x1)**2 + (y2 - y1)^2)
         
         if den == 0:
             return 0

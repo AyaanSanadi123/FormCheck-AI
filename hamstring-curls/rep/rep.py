@@ -7,6 +7,7 @@ class HamstringCurlRep:
         self.SCORE_MAX = 100
         
         # Baselines from Gatekeeper
+        self.active_side = calibration_data.get('active_side', "RIGHT")
         self.hip_baseline_y = calibration_data.get('hip_baseline_y', 0.0)
         
         # State Management
@@ -29,14 +30,15 @@ class HamstringCurlRep:
         if not landmarks:
             return None
 
-        # --- STEP 1: EXTRACT JOINTS (Normalized) ---
-        # Knee is (0,0). User faces RIGHT. Up is +Y. Head is -X.
-        l_hip = landmarks[23]; r_hip = landmarks[24]
-        l_ank = landmarks[27]; r_ank = landmarks[28]
+        # --- STEP 1: EXTRACT JOINTS (Normalized & Active) ---
+        if self.active_side == "LEFT":
+            hip = landmarks[23]; knee = landmarks[25]; ank = landmarks[27]
+        else:
+            hip = landmarks[24]; knee = landmarks[26]; ank = landmarks[28]
         
-        hip_y = (l_hip.y + r_hip.y) / 2
-        ank_x = (l_ank.x + r_ank.x) / 2
-        ank_y = (l_ank.y + r_ank.y) / 2
+        hip_y = hip.y
+        ank_x = ank.x
+        ank_y = ank.y
 
         # Prevent division by zero or exactly 0/0 scenarios
         if ank_x == 0 and ank_y == 0: ank_x = 0.001
@@ -78,7 +80,17 @@ class HamstringCurlRep:
 
             # FAULT: Hip Lift (Cheating with lower back/momentum)
             # If hips rise more than 15% of a leg length above baseline
-            if hip_y > (self.hip_baseline_y + 0.15):
+            # (Note: Normalized Y means UP is positive. Baseline is raw... Wait)
+            
+            # CRITICAL FIX: hip_baseline_y from Gatekeeper is RAW Y (0=Top).
+            # But Normalizer transforms Y to be (0=Knee, +Y=Up).
+            # We cannot compare Normalized Hip Y to Raw Baseline Hip Y.
+            # We must track Hip Lift relative to Normalized Knee (0).
+            # If Normalized Hip Y rises significantly, it means Hips are going UP relative to knee.
+            
+            # Since user is prone, Knee and Hip should be roughly same Y (0).
+            # If Hip Y becomes > 0.15, they are lifting hips.
+            if hip_y > 0.15:
                 self._add_fault("HIP_LIFT", 10, "Keep hips pressed flat into the pad!")
 
             # TRANSITION: Angular velocity flips negative (starts going down)

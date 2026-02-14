@@ -1,7 +1,7 @@
 import numpy as np
 
 class Landmark:
-    """A simple wrapper to mimic MediaPipe landmark structure."""
+    """Wrapper for normalized output."""
     def __init__(self, x, y, z, visibility):
         self.x = x
         self.y = y
@@ -10,123 +10,72 @@ class Landmark:
 
 class SquatNormalizer:
     def __init__(self):
-        # Smoothing Factor (alpha)
-        # 0.2 is a good balance for camera angle correction
-        self.alpha = 0.2 
-        self.smoothed_correction_angle = None
-        
-        # State Latching
-        self.target_side = None # Will lock to -90 or 90
+        # Default state
+        self.active_side = "RIGHT" 
+        self.floor_y = 0.5 
+        self.scale_factor = 1.0
 
-    def process(self, landmarks):
+    def process(self, landmarks, calibration_data=None):
         """
-        Main pipeline: 
-        1. Detect Angle
-        2. Smooth the Camera Correction
-        3. Rotate Landmarks to Perfect Side View
+        Standardizes landmarks to a Normal Pose (Facing Right, Floor at 0.0, Scaled).
+        Args:
+            landmarks: Raw MediaPipe landmarks.
+            calibration_data: Dict from Gatekeeper (active_side, floor_y, etc.)
         """
         if not landmarks:
             return []
 
-        # 1. Calculate Raw Facing Angle (Hip Vector)
-        raw_angle = self._get_facing_angle(landmarks)
+        # 1. Update Calibration (If provided by Gatekeeper)
+        if calibration_data:
+            self.active_side = calibration_data.get('active_side', "RIGHT")
+            self.floor_y = calibration_data.get('floor_y', 0.5)
+            # Torso length used as scaling factor
+            self.scale_factor = calibration_data.get('calibrated_scale', 1.0)
 
-        # 2. Determine Target Side (-90 or +90) - LATCHED
-        # We lock this on the first valid frame to prevent flipping 
-        if self.target_side is None:
-            # If user is approx 90 (Right), target 90. If -90 (Left), target -90.
-            # Squat gatekeeper ensures they are roughly side-on (60-120 range).
-            self.target_side = 90 if raw_angle > 0 else -90
-
-        # 3. Calculate Correction Needed
-        # Example: User is at 80°. Target 90°. Correction = +10°.
-        raw_correction = self.target_side - raw_angle
-
-        # 4. Smooth the Correction (The "Stabilizer")
-        if self.smoothed_correction_angle is None:
-            self.smoothed_correction_angle = raw_correction
-        else:
-            self.smoothed_correction_angle = (
-                self.alpha * raw_correction + 
-                (1 - self.alpha) * self.smoothed_correction_angle
-            )
-
-        # 5. Apply Rotation
-        # Rotate around the Vertical Y-Axis (Gravity) to fix perspective
-        aligned_landmarks = self._rotate_skeleton(
-            landmarks, 
-            self.smoothed_correction_angle
-        )
-
-        return aligned_landmarks
-
-    def _rotate_skeleton(self, landmarks, angle_deg):
-        """
-        Rotates all points around the geometric center (Mid-Hip for Squat)
-        by the given angle.
-        """
-        angle_rad = np.radians(angle_deg)
-        c, s = np.cos(angle_rad), np.sin(angle_rad)
-
-        # Find Anchor (Mid-Hip) to rotate around
-        # DYNAMIC: Recalculate per frame to handle shifts
-        # Indices: 23=Left Hip, 24=Right Hip
-        # Handle both Dict and Object inputs for flexibility
-        l_hip = landmarks[23]
-        r_hip = landmarks[24]
+        # 2. Determine Origin (The Anchor)
+        # We use the Active Hip as the horizontal origin.
+        # But we use the Calibrated Floor as the vertical origin.
         
-        l_x = getattr(l_hip, 'x', l_hip.get('x')) if hasattr(l_hip, 'x') or isinstance(l_hip, dict) else 0
-        l_z = getattr(l_hip, 'z', l_hip.get('z')) if hasattr(l_hip, 'z') or isinstance(l_hip, dict) else 0
-        r_x = getattr(r_hip, 'x', r_hip.get('x')) if hasattr(r_hip, 'x') or isinstance(r_hip, dict) else 0
-        r_z = getattr(r_hip, 'z', r_hip.get('z')) if hasattr(r_hip, 'z') or isinstance(r_hip, dict) else 0
+        # Select indices based on active side
+        if self.active_side == "LEFT":
+            idx_hip = 23
+            idx_ankle = 27
+            idx_sh = 11
+        else:
+            idx_hip = 24
+            idx_ankle = 28
+            idx_sh = 12
 
-        anchor_x = (l_x + r_x) / 2
-        anchor_z = (l_z + r_z) / 2
+        l_hip = landmarks[idx_hip]
+        origin_x = l_hip.x
+        
+        # Determine Facing Direction
+        # If user is Facing Left (active side is Left), Nose X < Hip X
+        # We need to flip X so everyone faces Right.
+        
+        # Standardize Facing:
+        # If active_side is LEFT, user is facing LEFT (typically).
+        # We want to flip everything horizontally if Facing Left.
+        # Or simpler:
+        facing_mult = -1.0 if self.active_side == "LEFT" else 1.0
 
         aligned = []
         for lm in landmarks:
-            # Handle input types
-            x = getattr(lm, 'x', lm.get('x'))
-            y = getattr(lm, 'y', lm.get('y'))
-            z = getattr(lm, 'z', lm.get('z'))
-            vis = getattr(lm, 'visibility', lm.get('visibility', 1.0))
+            x = getattr(lm, 'x', lm.get('x')) if hasattr(lm, 'x') or isinstance(lm, dict) else 0
+            y = getattr(lm, 'y', lm.get('y')) if hasattr(lm, 'y') or isinstance(lm, dict) else 0
+            z = getattr(lm, 'z', lm.get('z')) if hasattr(lm, 'z') or isinstance(lm, dict) else 0
+            vis = getattr(lm, 'visibility', lm.get('visibility', 1.0)) if hasattr(lm, 'visibility') or isinstance(lm, dict) else 1.0
 
-            # Shift to Anchor (Local Space)
-            dx = x - anchor_x
-            dz = z - anchor_z
+            # 3. Transform Points
             
-            # Apply Rotation Matrix (2D Rotation on X-Z plane)
-            # x' = x*cos - z*sin
-            # z' = x*sin + z*cos
-            new_x = (dx * c) - (dz * s)
-            new_z = (dx * s) + (dz * c)
+            # X: Shift origin to Hip, Flip if facing Left, Scale
+            # Result: Hip is at X=0. Knees forward is +X.
+            norm_x = ((x - origin_x) * facing_mult) / self.scale_factor
 
-            # Shift back to World Space
-            final_x = new_x + anchor_x
-            final_z = new_z + anchor_z
+            # Y: Shift origin to Floor, Invert (Up is +), Scale
+            # Result: Floor is Y=0. Hip is +Y.
+            norm_y = (self.floor_y - y) / self.scale_factor
 
-            # Return uniform Object structure (Visualizers expect .x .y)
-            aligned.append(Landmark(
-                x=final_x,
-                y=y,      # Y (Gravity) is invariant
-                z=final_z,   
-                visibility=vis
-            ))
+            aligned.append(Landmark(x=norm_x, y=norm_y, z=z, visibility=vis))
 
         return aligned
-
-    def _get_facing_angle(self, landmarks):
-        """Calculates the raw facing angle (-180 to 180) from hips."""
-        l_hip = landmarks[23]
-        r_hip = landmarks[24]
-
-        l_x = getattr(l_hip, 'x', l_hip.get('x'))
-        l_z = getattr(l_hip, 'z', l_hip.get('z'))
-        r_x = getattr(r_hip, 'x', r_hip.get('x'))
-        r_z = getattr(r_hip, 'z', r_hip.get('z'))
-
-        dx = l_x - r_x
-        dz = l_z - r_z
-        
-        angle_rad = np.arctan2(dz, dx)
-        return np.degrees(angle_rad)

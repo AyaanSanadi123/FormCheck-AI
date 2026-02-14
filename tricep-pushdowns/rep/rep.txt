@@ -1,0 +1,44 @@
+# TRICEP PUSHDOWN REP LOGIC: DETAILED PHYSICS & SCORING REPORT
+# Version: 1.0
+
+## 1. THE GEOMETRIC ENGINE: "THE STATIC PIVOT"
+Because the Normalizer pinned the Shoulder to (0,0) and scaled the grid by the humerus length, the upper arm should be completely rigid. 
+* **The Pivot (Elbow):** Must remain at its baseline (X, Y) coordinate.
+* **The Lever (Forearm):** Moves in a circular arc.
+* **The Metric:** We track the interior angle of `Shoulder -> Elbow -> Wrist`.
+    * 90°: Forearm is parallel to the floor (Starting position).
+    * 180°: Arm is perfectly straight (Lockout).
+
+## 2. THE REP CYCLE (STATE MACHINE)
+We use angular velocity (change in elbow angle over time) to drive the state machine.
+
+### State 1: IDLE (Flexed)
+* **Goal:** Hands high, tension on the tricep.
+* **Trigger to PUSHING:** Angular velocity is positive (angle is increasing rapidly towards 180°).
+
+### State 2: PUSHING (Concentric Phase)
+* **Goal:** Drive the hands down until the arms are locked out.
+* **Peak Detection:** We track `max_extension_angle`. The moment angular velocity flips negative, the user is letting the weight back up.
+
+### State 3: RETURNING (Eccentric Phase)
+* **Goal:** Control the weight back up to a 90° bend.
+* **Completion:** The angle drops below a threshold (e.g., < 100°).
+
+---
+
+## 3. FAULT DETECTION HIERARCHY
+
+
+### Severe Deductions (-10 Points)
+**1. ELBOW_SWING (The Leverage Cheat)**
+* **The Cheat:** Letting the elbow drift forward during the eccentric to use the lats, or heaving the shoulder up and down to use body weight.
+* **The Math:** We calculate the Euclidean distance between the current normalized `Elbow(x,y)` and the `baseline_el(x,y)` captured at setup. If this distance exceeds 0.20 "arm units" (20% of their upper arm length), they have broken the anchor.
+
+### Minor Deductions (-5 Points)
+**1. SHORT_LOCKOUT (Incomplete Extension)**
+* **The Cheat:** Stopping the push early because the weight is too heavy, missing peak tricep contraction.
+* **The Math:** At the transition from PUSHING to RETURNING, if `max_extension_angle` is less than 160°, they shorted the rep.
+
+**2. HALF_REP (Short Eccentric)**
+* **The Cheat:** Doing rapid "pumping" motions at the bottom without letting the hands come all the way back up to chest height.
+* **The Math:** If a new PUSHING phase begins before the elbow angle returns to at least 100°.

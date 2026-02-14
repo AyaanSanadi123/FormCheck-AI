@@ -1,0 +1,21 @@
+# TRICEP PUSHDOWN NORMALIZER: STRATEGY & MATH
+# Version: 1.0
+
+## 1. THE PROBLEM: "CAMERA DISTANCE & ANCHOR POINTS"
+To rigorously judge a tricep pushdown, we must ensure the upper arm (Shoulder to Elbow) remains completely static. If the user moves closer to or further from the camera between sets, pixel distances will change, breaking our thresholds.
+
+## 2. THE SOLUTION: "THE SHOULDER ORIGIN"
+The Shoulder is the absolute anchor of this movement. We will translate the coordinate system to make the Dominant Shoulder the center of the universe.
+
+### A. The Origin Shift
+* **Logic:** `Normalized_X = Raw_X - Shoulder_Origin_X`
+* **Logic:** `Normalized_Y = Shoulder_Origin_Y - Raw_Y` (Inverting MediaPipe's Y so UP is positive).
+* **Result:** The Shoulder is permanently at (0, 0). The elbow hangs in the negative Y space.
+
+### B. Standardization (Facing Right)
+* We mathematically flip Left-facing users so everyone faces **RIGHT (+1)**.
+* **Result:** The user always pushes the cable *down* (-Y) and slightly *forward* (+X).
+
+### C. The "Humerus Scale" (Unit Normalization)
+* **Logic:** Divide all distances by the `arm_length` (Shoulder to Elbow distance).
+* **Result:** A distance of `1.0` is exactly one upper-arm length. A perfectly anchored elbow will permanently sit at `X = 0.0, Y = -1.0` (assuming a perfectly vertical upper arm). Any deviation from this coordinate is immediately flagged as cheating.

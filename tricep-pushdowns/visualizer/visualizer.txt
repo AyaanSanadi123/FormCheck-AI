@@ -1,0 +1,22 @@
+# TRICEP PUSHDOWN VISUALIZER: STRATEGY & UX
+# Version: 1.0
+
+## 1. THE CHALLENGE: "THE INVISIBLE ANCHOR"
+Because the user isn't strapped into a machine, their core and lats are the only things keeping their shoulder and elbow in place. The visualizer must make this invisible mechanical anchor visible so the user immediately understands when they break form.
+
+## 2. THE VISUAL SOLUTIONS
+
+### A. The "Elbow Anchor Ring"
+* **Concept:** The elbow is the singular pivot point of this exercise. We will draw a high-contrast ring directly over the active elbow.
+* **Visual:** * Cyan/Green = The elbow is stable (Drift < 20%).
+    * Flashing Red = "ELBOW_SWING" fault. The ring turns red and pulses/thickens to indicate the mechanical anchor has been broken.
+* **Why:** It trains the user to freeze their upper arm.
+
+### B. The "Lever Arm"
+* **Concept:** Drawing thick, solid lines connecting the Shoulder -> Elbow -> Wrist, effectively turning the user's arm into a robotic lever on the screen.
+* **Visual:** We only render the active side (ignoring the occluded arm entirely). We display the real-time interior angle next to the elbow.
+    * Yellow = "SHORT_LOCKOUT" or "HALF_REP" triggered.
+
+### C. The Wrist Path Tracer
+* **Concept:** A trailing line tracking the wrist's X/Y coordinates.
+* **Why:** Shows the user their pushdown arc. A perfect rep traces a clean, repeatable slice of a circle. A sloppy rep with shoulder movement results in jagged, erratic path lines.
