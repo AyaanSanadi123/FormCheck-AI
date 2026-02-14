@@ -1,0 +1,33 @@
+================================================================
+HAMMER CURL GATEKEEPER: OBJECTIVES & STRATEGY
+Version: 1.0 (Neutral Grip & Profile Alignment)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+The Hammer Curl requires a specific "Neutral Grip" where palms face 
+the torso. The Gatekeeper's primary job is to verify this grip 
+orientation and establish a stable side-profile anchor before 
+allowing the rep counter to engage.
+
+2. THE VALIDATION PIPELINE
+--------------------------
+A. Grip Verification (The Hammer Check):
+- Monitors the Z-depth of the Index Finger (20) relative to the 
+  Wrist (16). In a neutral grip, these landmarks should align 
+  on the same vertical plane in a side profile.
+- If the thumb is significantly closer to the camera than the 
+  wrist, the user is likely supinating (Standard Curl).
+
+B. Profile Depth:
+- Z-depth difference between shoulders must be > 0.25 to ensure 
+  the camera has a clear view of the elbow pivot.
+
+
+
+3. THE CALIBRATION PASSPORT
+---------------------------
+* humerus_baseline: The upper arm length used to set the pivot radius.
+* elbow_x_anchor: The fixed horizontal coordinate for the elbow.
+* neutral_grip_z: The baseline Z-depth for rotation detection.
+================================================================

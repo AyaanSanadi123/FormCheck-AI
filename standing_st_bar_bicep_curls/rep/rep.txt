@@ -1,0 +1,52 @@
+================================================================
+BICEP CURL REP LOGIC: STRATEGY & SCORING
+# Version: 1.0 (Sagittal Flexion Logic)
+================================================================
+
+1. CORE METRICS
+---------------
+* Flexion Angle: The internal angle of the elbow joint.
+* Elbow Drift Ratio: The horizontal displacement of the elbow 
+  normalized by humerus length.
+* Sagittal Lean: The angular deviation of the spine from the 
+  vertical plumb line.
+
+2. REFINED SCORING RULES (Start at 100)
+---------------------------------------
+
+Major Deductions (-15)
+1. "ELBOW_SWAY": Occurs when the elbow moves >15% of humerus 
+   length away from the starting anchor. This indicates the 
+   shoulders are assisting the lift.
+2. "PARTIAL_ROM": If the peak contraction fails to reach < 45°. 
+   Usually caused by using weights that are too heavy.
+
+Minor Deductions (-10)
+1. "BACK_LEAN": Detected when the torso tilts backward >10° 
+   to help pull the bar through the sticking point.
+2. "CONTROL": A rapid extension phase (dropping the bar) 
+   without resisting the weight.
+
+
+
+3. FLEXION STATE MACHINE
+------------------------
+* FLEXING: Angle moves from 160° towards 45°. This is the 
+  concentric phase.
+* EXTENDING: Angle moves from 45° back towards 160°. This is 
+  the eccentric phase.
+* COMPLETE: Rep is counted only if the minimum angle achieved 
+  meets the peak contraction threshold.
+
+4. DATA INPUTS
+--------------
+* normalizer.landmarks: Provides the "Spine-Vertical" coordinates.
+* gatekeeper.calibration: Provides the 'elbow_x_anchor' to 
+  monitor for swing cheating.
+
+
+
+NOTE: This logic specifically targets "Cheat Curls." By locking 
+the elbow in 3D space, the system forces the user to rely on 
+the biceps brachii rather than total body momentum.
+================================================================

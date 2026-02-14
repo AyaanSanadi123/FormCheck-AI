@@ -1,0 +1,53 @@
+================================================================
+BICEP CURL NORMALIZER: GEOMETRY STRATEGY
+# Version: 1.0 (Sagittal Spine Alignment)
+================================================================
+
+1. THE CORE OBJECTIVE: "THE VIRTUAL PLUMB LINE"
+----------------------------------------------
+In a profile-view Bicep Curl, the most common error is "Back Lean." 
+However, if the camera is tilted or the user is standing on a 
+slight incline, a 0-degree X-coordinate check will fail. 
+
+The Normalizer creates a "Virtual Plumb Line" by aligning the user's 
+Hip (24) and Shoulder (12) to a perfectly vertical axis.
+
+2. REFINED ROTATION LOGIC
+-------------------------
+
+A. The Hip-Centric Pivot (Stability Anchor)
+- STRATEGY: Explicitly set the pivot of rotation to the Hip (24).
+- RATIONALE: During a curl, the lower body should remain a 
+  stationary pillar. By pivoting at the hip, we can accurately 
+  measure how much the upper body "sways" away from this anchor.
+
+
+
+B. Sagittal Plane Rectification (X-Y Correction)
+- CALCULATION: We measure the slope of the spine (Hip to Shoulder).
+- ACTION: Apply a rotation matrix to the X-Y plane to force the 
+  spine vector to -90°.
+- BENEFIT: This normalizes the "Starting Posture." Any subsequent 
+  movement of the shoulder backward is now a "True Lean" relative 
+  to the starting position, not a camera artifact.
+
+3. DATA INTEGRITY & DEPTH PRESERVATION
+--------------------------------------
+- CONSTRAINT: Rotation is performed on the X-Y plane (the 2D side view).
+- Z-AXIS: The Z-depth remains raw to monitor "Elbow Flare" (the 
+  elbow moving away from the body towards or away from the camera).
+
+4. TEMPORAL STABILIZATION
+-------------------------
+- METHOD: EMA Smoothing (Alpha 0.25).
+- IMPACT: This stabilizes the "Elbow Anchor." Without this, a 
+  shaky camera would make it look like the user is "swinging" 
+  their elbows when they are actually stationary.
+
+
+
+NOTE: This normalization step is critical for catching "Cheat Reps." 
+By forcing the spine to be vertical at the start of the process, 
+the Rep Analyzer can use a simple degree threshold (e.g., >7° lean) 
+to flag bad form.
+================================================================

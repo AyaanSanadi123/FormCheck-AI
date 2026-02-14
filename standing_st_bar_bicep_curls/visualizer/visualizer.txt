@@ -1,0 +1,47 @@
+================================================================
+BICEP CURL VISUALIZER: OBJECTIVES & STRATEGY
+# Version: 1.0 (Sagittal Feedback HUD)
+================================================================
+
+1. THE "ELBOW ANCHOR" HUD
+-------------------------
+The primary visual cue is the Elbow Crosshair.
+- GOAL: Provide a "target" for the user's elbow.
+- BEHAVIOR: If the elbow drifts horizontally (X-axis) beyond the 
+  calibrated threshold, the crosshair expands and turns RED.
+- PURPOSE: Instant feedback that the user is "swinging" rather 
+  than "curling."
+
+2. THE "PLUMB LINE" (Spine Integrity)
+-------------------------------------
+A thick line is rendered between the Shoulder and Hip.
+- GOAL: Highlight torso stability.
+- BEHAVIOR: The line remains white as long as the spine is 
+  within 10° of vertical. If the user leans back (using momentum), 
+  the line turns RED and an AR arrow appears at the shoulder 
+  pointing backwards.
+
+
+
+3. DYNAMIC FLEXION GAUGE
+------------------------
+Numerical angle display positioned next to the elbow joint.
+- ROM TARGET: The number turns GREEN once the user reaches the 
+  "Deep Contraction" zone (< 45°).
+- ROM WARNING: If the user stops at 90°, the number remains WHITE, 
+  visually signaling an incomplete rep.
+
+4. KINETIC HIGHLIGHTS
+---------------------
+- FOREARM VECTOR: A line between the Elbow and Wrist that 
+  changes brightness based on velocity.
+- TOAST NOTIFICATIONS: Large text at the bottom of the screen 
+  providing cues like "PIN YOUR ELBOWS" or "LOWER SLOWLY."
+
+
+
+NOTE: This profile-view visualizer is designed to make "cheating" 
+visible. By emphasizing the static nature of the upper arm and 
+torso, the user is forced to focus on the isolation of the 
+biceps brachii.
+================================================================

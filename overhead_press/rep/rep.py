@@ -16,6 +16,8 @@ class OverheadPressRepCounter:
         self.THRESH_ROM = 0.90       # Must travel 90% of arm length
         self.THRESH_LEAN_BACK = 20.0 # Max back lean angle allowed (Degrees)
         self.THRESH_SHALLOW_DEPTH = 0.1 # Max distance from shoulder to bar at bottom
+        self.THRESH_DESCENT_SPEED = 0.8 # Normalized velocity threshold for controlled descent
+        self.THRESH_DIRECTION_CHANGE = 0.1 # Normalized velocity for early direction change detection (e.g., bar stops before lockout)
         
         # State Management
         self.state = "IDLE" 
@@ -34,12 +36,11 @@ class OverheadPressRepCounter:
         # Timers
         self.start_time = 0
 
-    def process(self, landmarks, raw_landmarks=None):
+    def process(self, landmarks):
         """
         Main Logic Pipeline.
         Args:
             landmarks: List of Landmark objects (Corrected by Normalizer).
-            raw_landmarks: Raw MediaPipe landmarks for visualization.
         """
         if not landmarks:
             return None
@@ -76,12 +77,13 @@ class OverheadPressRepCounter:
             # TRIGGER: Bar moves up
             norm_vel = self.velocity / self.arm_length
             if norm_vel < -0.2:
-                self._start_rep(wrist.x)
+                self._reset_rep(wrist.x, curr_bar_y) # Pass curr_bar_y for initial max_bar_y
                 self.state = "ASCENDING"
 
         elif self.state == "ASCENDING":
             self.feedback_buffer = "Push!"
             
+            # Track highest point
             if curr_bar_y < self.max_bar_y: 
                  self.max_bar_y = curr_bar_y
 
@@ -89,18 +91,28 @@ class OverheadPressRepCounter:
             if torso_angle < (90 - self.THRESH_LEAN_BACK):
                 self._add_fault("LEAN_BACK", 10, "Don't lean back!")
 
-            # TRANSITION: Velocity flips to positive (Moving Down)
+            # FAULT: Early Descent / Bar stops before lockout (PARTIAL_ROM)
+            # Check if bar velocity becomes positive (starts moving down) too early
             norm_vel = self.velocity / self.arm_length
+            if norm_vel > self.THRESH_DIRECTION_CHANGE and elbow_angle < 170: # 170deg as near lockout
+                self._add_fault("PARTIAL_ROM", 15, "Fully Extend at Top!")
+
+            # TRANSITION: Velocity flips to positive (Moving Down)
             if norm_vel > 0.1:
                 self.state = "DESCENDING"
                 
-                # CHECK LOCKOUT
+                # CHECK LOCKOUT (once ascending phase is completed)
                 if elbow_angle < 160:
                     self._add_fault("INCOMPLETE_LOCKOUT", 5, "Fully lock out!")
 
         elif self.state == "DESCENDING":
             self.feedback_buffer = "Control down..."
             
+            # FAULT: Uncontrolled Descent Speed
+            norm_vel = self.velocity / self.arm_length
+            if norm_vel > self.THRESH_DESCENT_SPEED:
+                self._add_fault("CONTROL", 10, "Lower Slowly!")
+
             # TRANSITION: Bar returns to shoulder height
             if curr_bar_y >= self.shoulder_y:
                 self.state = "COMPLETE"
@@ -111,7 +123,7 @@ class OverheadPressRepCounter:
             if depth_gap > self.THRESH_SHALLOW_DEPTH * self.arm_length:
                 self._add_fault("SHALLOW_DEPTH", 5, "Bring the bar to your shoulders!")
 
-            self._finish_rep()
+            self._finalize_rep_success()
             self.state = "IDLE"
 
         # --- STEP 4: PACKAGE OUTPUT ---
@@ -122,19 +134,18 @@ class OverheadPressRepCounter:
             "feedback": self.feedback_buffer, 
             "angle": int(elbow_angle),
             "coords": landmarks,
-            "raw_coords": raw_landmarks,      
             "velocity": self.velocity,
             "faults": list(set([f['code'] for f in self.faults])) 
         }
 
     # --- HELPERS ---
 
-    def _start_rep(self, current_x):
+    def _reset_rep(self, current_x, initial_bar_y):
         """Reset score and faults for new rep."""
         self.current_score = self.SCORE_MAX
         self.faults = []
         self.start_time = time.time()
-        self.max_bar_y = self.shoulder_y
+        self.max_bar_y = initial_bar_y # Initialize with current bar position
         self.start_x = current_x # Record where the bar started (Shoulder line)
 
     def _add_fault(self, code, penalty, msg):
@@ -146,13 +157,14 @@ class OverheadPressRepCounter:
         self.faults.append({"code": code, "msg": msg})
         self.feedback_buffer = msg 
 
-    def _finish_rep(self):
-        """Finalizes the rep."""
-        # Only count if Form > 50 (Not a complete failure)
-        if self.current_score > 50:
+    def _finalize_rep_success(self):
+        """Finalizes the rep with nuanced feedback."""
+        # Rep only counts if score is salvageable and some effort was made
+        if self.current_score > 40:
             self.rep_count += 1
+            self.feedback_buffer = "Good Rep!" if self.current_score > 80 else "Rep Counted (Watch Form)"
         else:
-            self.feedback_buffer = "Rep Failed (Bad Form)"
+            self.feedback_buffer = "Rep Failed - Form too poor"
 
     def _get_midpoint(self, p1, p2):
         """Returns a dummy landmark representing the center of two points."""

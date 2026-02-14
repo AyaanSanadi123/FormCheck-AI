@@ -17,6 +17,7 @@ class StandingLateralRaiseRep:
         self.THRESH_SHRUG = 0.10       # 10% reduction in torso length = shrug
         self.THRESH_SWAY = 0.08        # Horizontal hip drift
         self.THRESH_ASYMMETRY = 15.0   # Max degree difference L vs R
+        self.THRESH_DESCENT_SPEED = self.FPS * 0.2 # Raw velocity threshold for controlled descent
         
         # State Management
         self.state = "IDLE"
@@ -30,7 +31,7 @@ class StandingLateralRaiseRep:
         self.prev_wrist_y = 0
         self.velocity = 0
 
-    def process(self, landmarks, raw_landmarks=None):
+    def process(self, landmarks):
         if not landmarks:
             return None
 
@@ -88,8 +89,12 @@ class StandingLateralRaiseRep:
                     self._add_fault("SHALLOW", 15, "Reach Shoulder Height")
 
         elif self.state == "DESCENDING":
+            # FAULT: Uncontrolled Descent Speed
+            if self.velocity > self.THRESH_DESCENT_SPEED:
+                self._add_fault("CONTROL", 10, "Lower Slowly!")
+
             if avg_angle < 25:
-                self._finish_rep()
+                self._finalize_rep_success()
                 self.state = "IDLE"
 
         return {
@@ -135,9 +140,11 @@ class StandingLateralRaiseRep:
             self.faults.append({"code": code, "msg": msg})
         self.feedback_buffer = msg
 
-    def _finish_rep(self):
-        if self.current_score > 60:
+    def _finalize_rep_success(self):
+        """Finalizes the rep with nuanced feedback."""
+        # Rep only counts if score is salvageable and some effort was made
+        if self.current_score > 40:
             self.rep_count += 1
-            self.feedback_buffer = "Good Rep!"
+            self.feedback_buffer = "Good Rep!" if self.current_score > 80 else "Rep Counted (Watch Form)"
         else:
-            self.feedback_buffer = "Rep Failed - Watch Form"
+            self.feedback_buffer = "Rep Failed - Form too poor"

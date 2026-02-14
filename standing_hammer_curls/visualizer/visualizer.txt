@@ -1,0 +1,27 @@
+================================================================
+HAMMER CURL VISUALIZER: OBJECTIVES & STRATEGY
+Version: 1.0 (The Hammer Handle HUD)
+================================================================
+
+1. THE "HAMMER HANDLE" OVERLAY
+------------------------------
+The visualizer renders a thick, high-contrast line over the 
+forearm (Elbow to Wrist).
+- CYAN: Correct neutral grip.
+- RED: Supination detected (Wrist is rotating).
+
+2. THE PIVOT CROSSHAIR
+----------------------
+A magenta crosshair is locked onto the elbow.
+- BEHAVIOR: If the elbow moves out of the "Drift Zone," the 
+  crosshair pulses red and displays the "KEEP ELBOWS FIXED" 
+  warning.
+
+
+
+3. FLEXION GAUGE
+----------------
+A numerical degree readout follows the wrist. It turns green 
+only when the "Peak Zone" (50°) is achieved, encouraging the 
+user to finish the range of motion.
+================================================================

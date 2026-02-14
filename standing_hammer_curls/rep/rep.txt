@@ -1,0 +1,56 @@
+================================================================
+HAMMER CURL REP LOGIC: STRATEGY & SCORING
+# Version: 1.1 (Neutral Axis & Safety Clipping)
+================================================================
+
+1. CORE METRICS
+---------------
+* Brachial Flexion: Internal elbow angle. Unlike standard curls, 
+  we look for a slightly shallower peak (50°) due to the 
+  mechanical stop of the forearm in a neutral position.
+* Grip Rotation (Supination): The Z-depth variance between the 
+  Thumb (21) and Pinky (18). 
+* Elbow Anchor Drift: Horizontal (X) displacement of the elbow 
+  joint relative to the humerus length.
+
+2. REFINED SCORING RULES (Start at 100)
+---------------------------------------
+
+Major Deductions (-15)
+1. "ELBOW_SWAY": Triggered if the elbow drifts > 12% of the 
+   humerus length. This indicates momentum assisted by the 
+   anterior deltoid.
+2. "GRIP_ROTATE": Triggered if the Z-variance between finger 
+   landmarks exceeds 0.08. This catches the user turning the 
+   palms upward (supinating) to engage the biceps brachii.
+
+
+
+Minor Deductions (-10)
+1. "PARTIAL_ROM": If the user fails to descend past 150° 
+   (Incomplete extension) or ascend past 50° (Short-changing 
+   the contraction).
+
+3. STATE MACHINE & SAFETY
+-------------------------
+* IDLE: Resting at bottom (> 150°).
+* CURLING: Concentric phase. System applies `np.clip` to 
+  dot products to prevent floating-point arccos errors.
+* DESCENDING: Eccentric phase. Score is finalized once 
+  extension exceeds the reset threshold.
+
+
+
+4. DATA INTEGRITY (Safety Checks)
+---------------------------------
+- Zero-Norm Protection: If landmarks overlap or visibility 
+  drops, the angle defaults to 180° to prevent NaN crashes.
+- Division Safety: The 'humerus_baseline' is hard-coded to 
+  1.0 if the Gatekeeper fails, preventing DivisionByZero errors.
+
+
+
+NOTE: Version 1.1 focuses on isolating the Brachialis. By 
+penalizing grip rotation, we ensure the hammer-specific 
+loading is maintained throughout the entire range of motion.
+================================================================

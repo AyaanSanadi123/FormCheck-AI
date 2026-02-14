@@ -1,0 +1,65 @@
+================================================================
+BICEP CURL GATEKEEPER: OBJECTIVES & STRATEGY
+Version: 1.0 (Sagittal Profile Calibration)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+The Gatekeeper establishes a "Side-Profile" baseline. Its primary 
+task is to map the user's arm levers (Humerus and Forearm) and 
+lock the horizontal "Elbow Anchor." This allows the system to 
+measure flexion without being fooled by torso swaying or 
+shoulder swinging.
+
+2. THE VALIDATION PIPELINE
+--------------------------
+
+A. Frame-Level Rejection (Instant)
+- PROFILE VERIFICATION: The Z-depth difference between the Left 
+  and Right shoulders must be > 0.25. This ensures the user is 
+  truly perpendicular to the lens, providing a clear view of the 
+  elbow joint.
+- VISIBILITY: Shoulder, Elbow, Wrist, and Hip of the side closest 
+  to the camera must have confidence > 0.90.
+- INITIAL STATE: The Wrist must be vertically lower than the 
+  Elbow. Calibration will not trigger if the user starts with 
+  the bar mid-curl.
+
+
+
+B. Temporal Validation (Stability Window)
+- WINDOW SIZE: 45 Frames (~1.5 seconds).
+- REQUIREMENT: The "Shoulder-to-Hip" alignment must remain nearly 
+  vertical. This ensures the user isn't starting in a leaned-back 
+  posture which would skew the "Cheating" thresholds.
+
+3. THE CALIBRATION PASSPORT (Data Latch)
+----------------------------------------
+Upon successful validation, the following anatomical data is locked:
+
+* humerus_baseline: The distance from Shoulder to Elbow. 
+  - USE: Acts as the "Pivot Radius."
+* forearm_baseline: The distance from Elbow to Wrist. 
+  - USE: Acts as the "Lever Length" for calculating torque speed.
+* elbow_x_anchor: The neutral horizontal position of the elbow.
+  - USE: If the elbow drifts > 15% of humerus length during a 
+    rep, it is flagged as "ELBOW_SWAY."
+* neutral_spine_v: The initial vector from Hip to Shoulder.
+  - USE: The baseline for detecting "BACK_LEAN" momentum.
+
+
+
+4. USER FEEDBACK STRATEGY
+-------------------------
+* "Turn 90 degrees to face the side": Triggered if the user faces 
+  the camera directly.
+* "Ensure your side profile is visible": Triggered by limb dropout.
+* "Calibrating Side Profile...": Visual indicator as the system 
+  locks the elbow anchor.
+
+
+
+NOTE: By isolating the 'humerus_baseline' and 'forearm_baseline' 
+separately, the analyzer can detect "partial range of motion" 
+failures more accurately than a simple height-based check.
+================================================================

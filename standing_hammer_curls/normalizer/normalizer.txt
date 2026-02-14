@@ -1,0 +1,27 @@
+================================================================
+HAMMER CURL NORMALIZER: GEOMETRY STRATEGY
+Version: 1.0 (Spine-Vertical Rectification)
+================================================================
+
+1. THE CORE OBJECTIVE: "SQUARING THE SAGITTAL PLANE"
+----------------------------------------------------
+To detect "Cheating" via back-leaning, the skeleton must be 
+normalized so that the spine is perfectly vertical at the start 
+of the exercise. 
+
+2. REFINED ROTATION LOGIC
+-------------------------
+A. Hip-Centric Pivot:
+- The rotation is pinned to the Hip (24). This allows the 
+  analyzer to measure "Torso Sway" as an angular deviation 
+  from a fixed base.
+
+
+
+B. X-Y Plane Correction:
+- The Normalizer calculates the current lean angle of the 
+  Shoulder-to-Hip vector and applies an inverse rotation to 
+  force that vector to 180° (Straight Up).
+- RESULT: Any movement of the shoulder backward during the 
+  curl is now a mathematically pure "Lean" relative to gravity.
+================================================================
