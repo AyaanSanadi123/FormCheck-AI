@@ -1,67 +1,89 @@
 import numpy as np
 
+class Landmark:
+    """A simple wrapper to mimic MediaPipe landmark structure."""
+    def __init__(self, x, y, z, visibility):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.visibility = visibility
+
 class BicepCurlNormalizer:
     def __init__(self):
-        # --- CONFIGURATION ---
-        self.alpha = 0.25  # Smoothing for the rotation angle
-        self.smoothed_angle = 0
-        self.target_vertical = -90.0  # Perfect vertical in arctan2 space
+        # No state needed for this implementation
+        pass
 
-    def process(self, landmarks):
+    def process(self, landmarks, calibration_data):
         """
-        Rectifies the side-profile view. 
-        Ensures the Hip-to-Shoulder line is the vertical reference.
+        Main pipeline:
+        1. Get calibration data
+        2. Normalize the skeleton (translate, scale, flip)
         """
-        if not landmarks or len(landmarks) < 33:
+        if not landmarks:
             return []
 
-        # 1. Capture Profile Pivot (Hip - ID 24) and Shoulder (ID 12)
-        # We use the Right side as the primary profile anchor.
-        hip = landmarks[24]
-        sh = landmarks[12]
+        if not calibration_data:
+            # Cannot normalize without calibration, return raw
+            return landmarks
+            
+        aligned_landmarks = self._normalize_skeleton(
+            landmarks, 
+            calibration_data
+        )
 
-        # 2. Calculate Current Spine Lean (Y-X Plane)
-        dy = sh.y - hip.y
-        dx = sh.x - hip.x
+        return aligned_landmarks
+
+    def _normalize_skeleton(self, landmarks, cal_data):
+        """
+        Translates, scales, and flips the skeleton to a canonical pose.
+        - Origin at the active Elbow (13 or 14)
+        - Scaled by 'scale_factor' from calibration_data
+        - Flipped so the user always faces RIGHT (positive X is forward)
+        """
+        active_side = cal_data.get("active_side", "RIGHT")
+        scale_factor = cal_data.get("scale_factor", 1.0) # Humerus length from Gatekeeper
         
-        # Angle of the spine relative to the horizontal
-        curr_angle = np.degrees(np.arctan2(dy, dx))
+        # Avoid division by zero
+        if scale_factor < 1e-5:
+            scale_factor = 1.0
 
-        # 3. Determine Correction Delta
-        # We want the spine to be at exactly -90 degrees (straight up)
-        delta = self.target_vertical - curr_angle
+        # --- Define Anchor (Active Elbow) ---
+        # Determine which elbow is active based on calibration_data
+        elbow_idx = 14 if active_side == "RIGHT" else 13
+        active_elbow = landmarks[elbow_idx]
+        
+        anchor_x = active_elbow.x
+        anchor_y = active_elbow.y
+        anchor_z = active_elbow.z
 
-        # 4. Apply EMA Smoothing
-        # Prevents "swaying" of the skeleton caused by camera jitter
-        self.smoothed_angle = (self.alpha * delta) + (1 - self.alpha) * self.smoothed_angle
+        # --- Determine Flip ---
+        # Blueprint: User should always face RIGHT (positive X is forward)
+        # In a side profile, if the active side is LEFT, we need to invert the X-axis
+        flip_modifier = -1.0 if active_side == "LEFT" else 1.0
 
-        # 5. Apply Rotation around the Hip Pivot
-        return self._apply_rotation(landmarks, self.smoothed_angle, hip.x, hip.y)
-
-    def _apply_rotation(self, landmarks, angle_deg, px, py):
-        """
-        Rotates the skeleton in the Sagittal (X-Y) plane.
-        This aligns the user's torso with the gravity axis.
-        """
-        angle_rad = np.radians(angle_deg)
-        cos_t = np.cos(angle_rad)
-        sin_t = np.sin(angle_rad)
-
-        normalized_landmarks = []
+        normalized = []
         for lm in landmarks:
-            # Shift to Hip Origin
-            x_rel = lm.x - px
-            y_rel = lm.y - py
+            # 1. Translate to Anchor (Origin)
+            dx = lm.x - anchor_x
+            dy = lm.y - anchor_y
+            dz = lm.z - anchor_z
+            
+            # 2. Scale
+            dx_scaled = dx / scale_factor
+            dy_scaled = dy / scale_factor
+            dz_scaled = dz / scale_factor
 
-            # 2D Rotation (Sagittal Rectification)
-            new_x = x_rel * cos_t - y_rel * sin_t
-            new_y = x_rel * sin_t + y_rel * cos_t
+            # 3. Flip X and Z for side-view consistency
+            dx_flipped = dx_scaled * flip_modifier
+            dz_flipped = dz_scaled * flip_modifier
 
-            normalized_landmarks.append(type(lm)(
-                x = new_x + px,
-                y = new_y + py,
-                z = lm.z, # Z-depth is preserved
-                visibility = lm.visibility
+
+            # Append the fully normalized landmark
+            normalized.append(Landmark(
+                x=dx_flipped,
+                y=dy_scaled,
+                z=dz_flipped,
+                visibility=lm.visibility
             ))
 
-        return normalized_landmarks
+        return normalized

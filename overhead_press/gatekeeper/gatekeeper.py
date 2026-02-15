@@ -59,6 +59,7 @@ class OverheadPressGatekeeper:
         # --- STEP 4: TEMPORAL BUFFERING ---
         # We track the WRIST position (The Bar) for stability
         bar_y = (landmarks[15].y + landmarks[16].y) / 2
+        shoulder_y = (landmarks[11].y + landmarks[12].y) / 2
         
         frame_metrics = {
             "bar_y": bar_y,
@@ -74,9 +75,11 @@ class OverheadPressGatekeeper:
             return False, f"Hold Bar Steady... {progress}%", None
 
         if not self._is_stable():
+            # Let the buffer slide
             return False, "Don't move the bar...", None
 
         # --- STEP 6: SUCCESS / CALIBRATION ---
+        self.is_calibrated = True
         calibration_data = self._generate_passport(landmarks)
         return True, "OVERHEAD PRESS READY!", calibration_data
 
@@ -89,8 +92,8 @@ class OverheadPressGatekeeper:
         Calculates the angle of the hips relative to the camera.
         0 = Head on, 90 = Side view.
         """
-        l_hip = landmarks[23]
-        r_hip = landmarks[24]
+        l_hip = landmarks[self.MP_POSE.LEFT_HIP.value]
+        r_hip = landmarks[self.MP_POSE.RIGHT_HIP.value]
         
         dx = l_hip.x - r_hip.x
         dz = l_hip.z - r_hip.z
@@ -111,18 +114,25 @@ class OverheadPressGatekeeper:
 
     def _generate_passport(self, landmarks):
         """Captures the user's dimensions for the Rep Logic."""
-        avg_shoulder_height = np.mean([m['shoulder_y'] for m in self.validation_buffer])
-        avg_angle = np.mean([m['angle'] for m in self.validation_buffer])
-        
-        # Calculate Arm Length (Shoulder to Wrist 3D distance)
-        # This acts as our "Scale" to determine if they hit chest depth
+        # Determine active side
+        l_shoulder_z = landmarks[self.MP_POSE.LEFT_SHOULDER.value].z
+        r_shoulder_z = landmarks[self.MP_POSE.RIGHT_SHOULDER.value].z
+        active_side = "LEFT" if l_shoulder_z < r_shoulder_z else "RIGHT"
+
+        # Calculate torso length for scale
+        shoulder_y = (landmarks[self.MP_POSE.LEFT_SHOULDER.value].y + landmarks[self.MP_POSE.RIGHT_SHOULDER.value].y) / 2
+        hip_y = (landmarks[self.MP_POSE.LEFT_HIP.value].y + landmarks[self.MP_POSE.RIGHT_HIP.value].y) / 2
+        scale_factor = abs(shoulder_y - hip_y)
+
+        # Calculate Arm Length as a secondary scale
         s = np.array([landmarks[11].x, landmarks[11].y, landmarks[11].z])
         w = np.array([landmarks[15].x, landmarks[15].y, landmarks[15].z])
         arm_length = np.linalg.norm(s - w)
         
         return {
-            "shoulder_y": avg_shoulder_height,      # The "Zero" line for starting position
-            "calibrated_angle": avg_angle,    # For Normalizer
-            "arm_length": arm_length,         # For Depth Check
+            "active_side": active_side,
+            "scale_factor": scale_factor,
+            "arm_length_scale": arm_length,
+            "shoulder_y": np.mean([m['shoulder_y'] for m in self.validation_buffer]),
             "calibrated_at": time.time()
         }

@@ -1,69 +1,94 @@
 import numpy as np
 
+class Landmark:
+    """A simple wrapper to mimic MediaPipe landmark structure."""
+    def __init__(self, x, y, z, visibility):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.visibility = visibility
+
 class StandingLateralRaiseNormalizer:
     def __init__(self):
-        # --- CONFIGURATION ---
-        self.alpha = 0.25  # Smoothing factor for rotation delta (EMA)
-        self.smoothed_delta = 0
-        self.target_angle = 0.0  # We want the user facing perfectly 0° (Frontal)
+        # No state needed for this implementation, as calibration data is passed per frame
+        pass
 
-    def process(self, landmarks):
+    def process(self, landmarks, calibration_data):
         """
-        Rectifies perspective to a perfect Frontal View centered on shoulders.
-        Ensures Y-axis integrity for torso-length based shrug detection.
+        Main pipeline: 
+        1. Get calibration data
+        2. Normalize the skeleton (translate, scale, flip/rotate to canonical frontal view)
         """
-        if not landmarks or len(landmarks) < 33:
+        if not landmarks:
             return []
 
-        # 1. Capture Shoulder Landmarks
+        if not calibration_data:
+            # Cannot normalize without calibration, return raw
+            return landmarks
+            
+        normalized_landmarks = self._normalize_skeleton(
+            landmarks, 
+            calibration_data
+        )
+
+        return normalized_landmarks
+
+    def _normalize_skeleton(self, landmarks, cal_data):
+        """
+        Translates, scales, and rotates the skeleton to a canonical frontal pose.
+        - Origin at the Mid-Shoulder (11, 12)
+        - Scaled by 'scale_factor' (torso_baseline) from calibration_data
+        - Rotated to ensure a perfect frontal view (hips/shoulders aligned on X-axis)
+        """
+        scale_factor = cal_data.get("scale_factor", 1.0)
+        
+        # Avoid division by zero
+        if scale_factor < 1e-5:
+            scale_factor = 1.0
+
+        # --- Define Anchor (Mid-Shoulder) ---
         l_sh = landmarks[11]
         r_sh = landmarks[12]
         
-        # 2. Calculate Current Facing Angle (X-Z Plane)
-        # Using arctan2 on the Z and X difference between shoulders
+        anchor_x = (l_sh.x + r_sh.x) / 2
+        anchor_y = (l_sh.y + r_sh.y) / 2
+        anchor_z = (l_sh.z + r_sh.z) / 2
+
+        # --- Calculate current rotation needed to align shoulders/hips on X-axis ---
+        # This is the "target_angle = 0.0" equivalent from the original code
+        # using the shoulders directly to find the rotation in the X-Z plane
         dx = l_sh.x - r_sh.x
         dz = l_sh.z - r_sh.z
-        curr_angle = np.degrees(np.arctan2(dz, dx))
-
-        # 3. Determine Correction Delta
-        # Goal is to bring curr_angle to 0.0
-        delta = self.target_angle - curr_angle
-
-        # 4. Apply EMA Smoothing
-        # Stabilizes the 'Virtual Camera' to prevent skeleton jitters
-        self.smoothed_delta = (self.alpha * delta) + (1 - self.alpha) * self.smoothed_delta
-
-        # 5. Define THE PIVOT (Mid-Shoulder)
-        # This is the 'Anchor' that keeps torso and arm vectors concentric
-        pivot_x = (l_sh.x + r_sh.x) / 2
-        pivot_z = (l_sh.z + r_sh.z) / 2
-
-        return self._apply_rotation(landmarks, self.smoothed_delta, pivot_x, pivot_z)
-
-    def _apply_rotation(self, landmarks, angle_deg, px, pz):
-        """
-        Applies X-Z Plane Rectification while strictly locking the Y-axis.
-        """
-        angle_rad = np.radians(angle_deg)
+        current_angle = np.degrees(np.arctan2(dz, dx)) # Angle of the line connecting shoulders
+        
+        # We want this line to be purely horizontal, so the rotation needed is 'current_angle'
+        angle_rad = np.radians(current_angle)
         cos_theta = np.cos(angle_rad)
         sin_theta = np.sin(angle_rad)
 
-        normalized_landmarks = []
+        normalized = []
         for lm in landmarks:
-            # Shift coordinate system to origin relative to Mid-Shoulder Pivot
-            x_rel = lm.x - px
-            z_rel = lm.z - pz
+            # 1. Translate to Anchor (Origin)
+            x_rel = lm.x - anchor_x
+            y_rel = lm.y - anchor_y
+            z_rel = lm.z - anchor_z
+            
+            # 2. Apply Rotation (to make shoulders horizontal)
+            # This rotates the whole body so the shoulder line is flat on the X axis
+            rotated_x = x_rel * cos_theta - z_rel * sin_theta
+            rotated_z = x_rel * sin_theta + z_rel * cos_theta
 
-            # Standard 2D rotation matrix applied to the 'Floor' plane
-            new_x = x_rel * cos_theta - z_rel * sin_theta
-            new_z = x_rel * sin_theta + z_rel * cos_theta
+            # 3. Scale the rotated coordinates
+            scaled_x = rotated_x / scale_factor
+            scaled_y = y_rel / scale_factor # Y is not rotated, but still scaled
+            scaled_z = rotated_z / scale_factor
 
-            # Reconstruct the landmark with preserved Y (Gravity)
-            normalized_landmarks.append(type(lm)(
-                x = new_x + px,
-                y = lm.y,  # STATED REQUIREMENT: Strictly lock Y-axis
-                z = new_z + pz,
-                visibility = lm.visibility
+            # Append the fully normalized landmark
+            normalized.append(Landmark(
+                x=scaled_x,
+                y=scaled_y,
+                z=scaled_z,
+                visibility=lm.visibility
             ))
 
-        return normalized_landmarks
+        return normalized

@@ -91,7 +91,8 @@ class StandingLateralRaiseGatekeeper:
     def _finalize_calibration(self):
         """Averages the buffer to create the Calibration Passport."""
         self.calibration_data = {
-            'torso_baseline': np.mean([f['torso_l'] for f in self.window_buffer]),
+            'active_side': "BOTH", # Frontal view, both sides are active
+            'scale_factor': np.mean([f['torso_l'] for f in self.window_buffer]), # Torso length as scale factor
             'arm_length': np.mean([f['arm_l'] for f in self.window_buffer]),
             'sh_y_baseline': np.mean([f['sh_y'] for f in self.window_buffer]),
             'neutral_hip_x': np.mean([f['hip_x'] for f in self.window_buffer]),
@@ -100,6 +101,3 @@ class StandingLateralRaiseGatekeeper:
         }
         self.is_calibrated = True
         self.feedback = "Calibration Complete! Start Raising."
-
-    def get_data(self):
-        return self.calibration_data

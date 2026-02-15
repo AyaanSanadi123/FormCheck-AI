@@ -9,7 +9,8 @@ class OverheadPressVisualizer:
             'GREEN': (0, 255, 0),
             'RED': (0, 0, 255),
             'CYAN': (255, 255, 0),
-            'YELLOW': (0, 255, 255),
+            'YELLOW': (0, 255, 255), # Keeping yellow for now, but will use ORANGE for blueprint compliance
+            'ORANGE': (0, 165, 255), # Blueprint standard warning color
             'WHITE': (255, 255, 255),
             'BLACK': (0, 0, 0),
             'BLUE_TRANSPARENT': (255, 0, 0)
@@ -24,7 +25,7 @@ class OverheadPressVisualizer:
         Main rendering pipeline.
         Args:
             frame: Raw video frame.
-            packet: Output from BenchPressRep.process().
+            packet: Output from OverheadPressRepCounter.process().
         """
         if packet is None:
             return frame
@@ -36,11 +37,14 @@ class OverheadPressVisualizer:
         feedback = packet.get('feedback', "")
         faults = packet.get('faults', [])
         raw_coords = packet.get('raw_coords', None)
+        metrics = packet.get('metrics', {}) # Get the metrics dictionary
+        
+        angle = metrics.get('angle', 0) # Extract angle from metrics
 
         # 1. Determine Status Color
         status_color = self.COLORS['GREEN']
         if score < 70: status_color = self.COLORS['RED']
-        elif score < 90: status_color = self.COLORS['YELLOW']
+        elif score < 90: status_color = self.COLORS['ORANGE'] # Use ORANGE for warning
 
         if raw_coords:
             # 2. Draw The "Target Box" (Shoulder Alignment)
