@@ -1,0 +1,26 @@
+# ONE ARM ROW GATEKEEPER: STRATEGY & LOGIC
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE VIEWPOINT & OCCLUSION
+The One-Arm Row is a unilateral movement that requires a side-profile view from the side of the working arm. If the user records from the non-working side, their torso will completely occlude the dumbbell and their working arm. 
+* **Blueprint Compliance:** The Gatekeeper uses a `_get_dominant_side()` helper to assess visibility and strictly locks tracking to the `active_side`, discarding the occluded landmarks.
+
+## 2. THE SETUP HEURISTICS (RELATIVE BASELINES)
+Because lifters use different stances (flat bench vs. tripod/rack lean), we cannot enforce a strict "0-degree" back angle. Instead, we allow a range and capture their *personal* setup angle.
+1.  **The Torso Angle:** The `Shoulder -> Hip` vector must be between 0° and 55° relative to the horizontal floor.
+2.  **The Dead Hang (Plumb Line):** The working arm must be fully extended straight down. The `Shoulder -> Elbow -> Wrist` angle must be > 150°, and the Wrist must be physically below the Shoulder (Y-axis).
+3.  **Stability:** The user must hold this stretched bottom position for 1.5 seconds to establish the baseline.
+
+## 3. THE ORIGIN & SCALE
+As discussed, anchoring the Shoulder would blind the Rep Logic to torso-heaving (the "Lawnmower" cheat). 
+* **The Origin:** We will anchor the `active_side` **Hip** at `(0,0)`. 
+* **The Scale Factor:** Per the blueprint standard, we will scale the grid using the Torso Length (Hip to Shoulder distance).
+
+## 4. CALIBRATION DATA (THE PASSPORT)
+Outputs a dictionary strictly formatted for the Normalizer and Rep Logic:
+* `active_side`: "LEFT" or "RIGHT".
+* `facing_side`: +1 (Head on Right) or -1 (Head on Left).
+* `hip_origin_x`, `hip_origin_y`: The absolute (0,0) anchor point.
+* `setup_torso_angle`: The user's personal back angle, used to catch torso heaving.
+* `scale_factor`: The length of the torso, acting as the universal unit of measurement.

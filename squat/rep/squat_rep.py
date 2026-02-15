@@ -29,18 +29,20 @@ class SquatRep:
         # Smoothing & Velocity
         self.prev_hip_y = 0
         self.prev_shoulder_y = 0
+        self.prev_time = 0
         self.velocity = 0 # Hip vertical velocity (scalar for output)
         self.hip_velocity_signed = 0 # Signed (+ is down, - is up)
         self.shoulder_velocity_signed = 0
         self.start_time = 0
         self.bottom_time = 0
 
-    def process(self, landmarks, raw_landmarks=None):
+    def process(self, landmarks, raw_landmarks=None, timestamp=None):
         """
         Main Pipeline: Input -> Analyze -> Output
         Args:
             landmarks: Normalized/Aligned landmarks (Objects with .x, .y, .z)
             raw_landmarks: Optional Raw MediaPipe landmarks for environmental checks.
+            timestamp: Float time in seconds.
         """
         if not landmarks:
             return None
@@ -69,19 +71,29 @@ class SquatRep:
         hip_angle = self._calculate_angle(sh, hip, knee) # New: Explicit Hip Angle
         
         # Calculate Velocities (Signed: +Down, -Up)
-        curr_time = time.time()
-        dt = 1.0 / self.FPS # Approx delta time
+        curr_time = timestamp if timestamp else time.time()
         
+        if self.prev_time == 0:
+            dt = 1.0 / self.FPS # Fallback for first frame
+        else:
+            dt = curr_time - self.prev_time
+        
+        # Avoid division by zero
+        if dt <= 0: dt = 0.001
+
         # Hip Velocity
         if self.prev_hip_y != 0:
             self.hip_velocity_signed = (hip.y - self.prev_hip_y) / dt
             self.velocity = abs(self.hip_velocity_signed)
-        self.prev_hip_y = hip.y
         
         # Shoulder Velocity
         if self.prev_shoulder_y != 0:
             self.shoulder_velocity_signed = (sh.y - self.prev_shoulder_y) / dt
+
+        # Update History
+        self.prev_hip_y = hip.y
         self.prev_shoulder_y = sh.y
+        self.prev_time = curr_time
 
         # --- STEP 4: STATE MACHINE & FAULT DETECTION ---
         

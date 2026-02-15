@@ -57,9 +57,13 @@ def main():
         if results.pose_landmarks:
             landmarks = results.pose_landmarks.landmark
         
+        # Capture current time for velocity calculations
+        import time
+        timestamp = time.time()
+
         # Process Frame
         # The pipeline handles logic + drawing
-        output_frame = pipeline.process(frame, landmarks)
+        output_frame = pipeline.process(frame, landmarks, timestamp=timestamp)
 
         # Show Result
         cv2.imshow('FormCheck AI', output_frame)

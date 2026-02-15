@@ -1,0 +1,27 @@
+# ONE ARM ROW NORMALIZER: STRATEGY & MATH
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE CANONICAL POSE
+Per the pipeline blueprint, the Normalizer's job is to create a universal geometric standard so the Rep Logic never has to worry about camera distance or which direction the user is facing. 
+
+For the One-Arm Row, our Canonical Pose is:
+* **The Pivot (Origin):** The active **Hip** is mathematically locked at `(0, 0)`.
+* **The Y-Axis (Vertical):** Inverted so that pulling the weight up towards the ceiling is strictly positive (`+Y`).
+* **The X-Axis (Horizontal):** Normalized so that the user's Head (Shoulder) is always in the positive space (`+X`), meaning they are facing RIGHT.
+* **The Scale:** All coordinates are divided by the `scale_factor` (Hip to Shoulder distance, i.e., Torso Length).
+
+## 2. MATHEMATICAL PROOFS FOR THE X-AXIS FLIP
+The Gatekeeper passes a `facing_side` variable.
+* **Scenario A (Facing Right):** `facing_side = 1.0`. The Shoulder X is larger than the Hip X. 
+    * Formula: `(Raw.x - Origin.x) * 1.0` = Positive. The Shoulder remains at `+X`.
+* **Scenario B (Facing Left):** `facing_side = -1.0`. The Shoulder X is smaller than the Hip X. 
+    * Formula: `(Raw.x - Origin.x) * -1.0` = Positive. The Shoulder is flipped to `+X`.
+* **Result:** The Rep Logic can assume the user is *always* facing right.
+
+## 3. IMPACT ON REP LOGIC
+By enforcing this Canonical Pose:
+1.  **The Torso:** Sits firmly in the `+X, +Y` quadrant.
+2.  **The Arm:** Hangs down into the `+X, -Y` quadrant during the `IDLE` phase.
+3.  **The J-Curve:** A perfect row will see the wrist travel UP (`+Y`) and BACK (`-X` towards the `0` origin).
+4.  **The Torso Heave (Lawnmower Cheat):** Because the Hip is anchored at `0,0`, if the Shoulder's `Y` coordinate rapidly increases, we immediately know the user has yanked their torso upward, breaking their back angle!

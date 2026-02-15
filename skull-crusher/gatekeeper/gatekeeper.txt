@@ -1,0 +1,30 @@
+# SKULL CRUSHER GATEKEEPER: STRATEGY & LOGIC
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE VIEWPOINT & OCCLUSION
+The Skull Crusher requires a strict side profile. Because the user's arms are extended straight up, the arm closest to the camera will completely occlude the arm furthest away. We must utilize the "Active Side" filtering logic to discard the occluded MediaPipe landmarks before performing any math.
+
+## 2. THE SETUP HEURISTICS (GEOMETRY CHECK)
+To begin tracking, the user must be lying flat on a bench with the weight pressed straight up over their chest/eyes, ready to begin the eccentric (lowering) phase.
+
+* **Problem A (Not Lying Down):** The user might be sitting on the bench preparing for the set.
+* **Problem B (Arms Not Extended):** The user might have the bar resting on their chest or forehead.
+* **Problem C (Wrong Angle):** The user might be doing a pullover (arms angled 45 degrees behind the head) rather than a skull crusher.
+
+## 3. MATHEMATICAL VALIDATION
+Per the pipeline blueprint, the Gatekeeper enforces a geometric checklist:
+
+1.  **Dominant Side Detection:** Compare visibility of Left vs. Right (Shoulder, Elbow, Wrist, Hip) to select the `active_side`.
+2.  **The Supine Check:** Calculate the angle of the `Shoulder -> Hip` vector. It must be nearly horizontal (e.g., < 25° relative to the floor).
+3.  **The Vertical Anchor Check:** The elbow must be physically *higher* than the shoulder (in MediaPipe, `Elbow.y < Shoulder.y`).
+4.  **The Lockout Check (Starting ROM):** The arms must be fully extended upward. The interior angle of `Shoulder -> Elbow -> Wrist` must be > 150°.
+5.  **Stability Buffer:** The user must hold this top position steady for 1.5 seconds.
+
+## 4. CALIBRATION DATA (THE PASSPORT)
+Outputs a dictionary strictly formatted for the Normalizer:
+* `active_side`: "LEFT" or "RIGHT".
+* `facing_side`: +1 (Head on Left) or -1 (Head on Right).
+* `shoulder_origin_x`, `shoulder_origin_y`: The absolute (0,0) anchor point.
+* `baseline_el_x`, `baseline_el_y`: The static pivot coordinate to detect the "Shoulder Swing" fault later.
+* `scale_factor`: The length of the upper arm (Shoulder to Elbow), acting as the universal unit of measurement.

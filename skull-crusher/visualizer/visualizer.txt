@@ -1,0 +1,23 @@
+# SKULL CRUSHER VISUALIZER: STRATEGY & UX
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE CHALLENGE: "THE SUPINE ANCHOR"
+Like the Tricep Pushdown, the Skull Crusher requires locking the upper arm in space. Because the user is lying down, the camera angle is rotated 90 degrees compared to a standing lift. The visualizer must clearly show if that vertical anchor is breaking.
+
+## 2. THE VISUAL SOLUTIONS
+
+### A. The "Elbow Anchor Ring"
+* **Concept:** We will reuse the highly effective pivot ring from the Pushdown, but tailored for the supine position.
+* **Visual:** Drawn over the active elbow.
+    * Cyan/Green = The elbow is stable (Drift < 20%).
+    * Flashing Red = "SHOULDER_SWING" fault. The ring turns red and pulses to indicate the user is using their lats to heave the weight.
+
+### B. The "Lever Arm"
+* **Concept:** Render the active arm (Shoulder -> Elbow -> Wrist) with thick, anti-aliased lines.
+* **Visual:** We will extract `active_side` from the `metrics` dictionary to ensure we only draw the arm facing the camera, ignoring the occluded side.
+    * Yellow = "SHALLOW_DROP" or "SHORT_LOCKOUT" triggered.
+
+### C. The Wrist Path Tracer
+* **Concept:** A trailing line tracking the wrist's X/Y coordinates.
+* **Visual:** For a skull crusher, this should trace a smooth, quarter-circle arc descending toward the forehead and pushing back up to the ceiling.

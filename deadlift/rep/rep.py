@@ -26,19 +26,17 @@ class DeadliftRep:
         
         # Physics Tracking
         self.prev_bar_y = 0
+        self.prev_time = 0
         self.velocity = 0
         self.max_bar_y = 0      # Track highest point (Lockout height)
-        
-        # "Stripper Pull" Baselines
-        self.start_hip_y = 0    
-        self.start_sh_y = 0     
 
-    def process(self, landmarks, raw_landmarks=None):
+    def process(self, landmarks, raw_landmarks=None, timestamp=None):
         """
         Main Logic Pipeline.
         Args:
             landmarks: Normalized landmarks (Y=0 is Floor, +Y is Up).
             raw_landmarks: Passed through for visualizer.
+            timestamp: Float time in seconds.
         """
         if not landmarks:
             return None
@@ -56,9 +54,19 @@ class DeadliftRep:
         bar_height = wrist.y 
         
         # B. Velocity
-        dt = 1.0 / self.FPS
+        curr_time = timestamp if timestamp else time.time()
+        if self.prev_time == 0:
+            dt = 1.0 / self.FPS
+        else:
+            dt = curr_time - self.prev_time
+        
+        if dt <= 0: dt = 0.001
+
         self.velocity = (bar_height - self.prev_bar_y) / dt
+        
+        # Update History
         self.prev_bar_y = bar_height
+        self.prev_time = curr_time
 
         # C. Joint Angles
         hip_angle = self._calculate_angle(sh, hip, knee)

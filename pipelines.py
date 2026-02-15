@@ -2,8 +2,16 @@ import cv2
 import mediapipe as mp
 import importlib
 
+class Landmark:
+    """Wrapper for normalized output."""
+    def __init__(self, x, y, z, visibility):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.visibility = visibility
+
 class ExercisePipeline:
-    def process(self, frame, landmarks):
+    def process(self, frame, landmarks, timestamp=None):
         raise NotImplementedError
 
 class GenericPipeline(ExercisePipeline):
@@ -20,7 +28,7 @@ class GenericPipeline(ExercisePipeline):
         self.calibration_data = None
         self.status_message = "Initializing..."
 
-    def process(self, frame, landmarks):
+    def process(self, frame, landmarks, timestamp=None):
         if not landmarks:
             return frame
 
@@ -47,7 +55,7 @@ class GenericPipeline(ExercisePipeline):
 
         # 3. Rep Logic
         # Pass both normalized and raw landmarks
-        packet = self.rep_logic.process(normalized_landmarks, raw_landmarks=landmarks)
+        packet = self.rep_logic.process(normalized_landmarks, raw_landmarks=landmarks, timestamp=timestamp)
 
         # 4. Visualization
         return self.visualizer.draw(frame, packet)

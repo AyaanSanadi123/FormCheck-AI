@@ -1,0 +1,25 @@
+# SKULL CRUSHER NORMALIZER: STRATEGY & MATH
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE PROBLEM: "CAMERA PLACEMENT & PROPORTIONS"
+Because the user is lying flat on a bench, the camera can be placed on either side of them. Furthermore, the distance from the camera to the bench will change the pixel dimensions of their arm. We must transform these raw pixels into a standardized, universal grid before the Rep Logic processes them.
+
+## 2. THE CANONICAL POSE (THE SOLUTION)
+Per the pipeline blueprint, the Normalizer creates a universal geometric standard. For the Skull Crusher, our Canonical Pose is defined as:
+* **The Pivot (Origin):** The active Shoulder is strictly locked at `(0, 0)`.
+* **The Y-Axis (Vertical):** Inverted so that ceiling/upwards is positive (`+Y`).
+* **The X-Axis (Horizontal):** Normalized so that the Head is always in the negative space (`-X`) and the Feet are always in the positive space (`+X`).
+* **The Scale:** All coordinates are divided by the `scale_factor` (Shoulder to Elbow distance) provided by the Gatekeeper.
+
+## 3. MATHEMATICAL PROOFS FOR THE X-AXIS FLIP
+The Gatekeeper passes a `facing_side` variable. 
+* **Scenario A (Head on Left):** `facing_side = 1.0`. The Hip X is larger than the Shoulder X. Formula: `(Hip.x - Origin.x) * 1.0` = Positive. Feet are at `+X`. Head is at `-X`.
+* **Scenario B (Head on Right):** `facing_side = -1.0`. The Hip X is smaller than the Shoulder X. Formula: `(Hip.x - Origin.x) * -1.0` = Positive. Feet are flipped to `+X`. Head is flipped to `-X`.
+* **Result:** The user is mathematically rotated so they always appear to be lying with their head on the left side of the screen.
+
+## 4. IMPACT ON REP LOGIC
+By enforcing this Canonical Pose, the Rep Logic can definitively assume:
+1.  The upper arm (Shoulder to Elbow) lives in the `+Y` quadrant.
+2.  If the Elbow drops into the `+X` space during the eccentric, the user is letting their elbows fall toward their feet.
+3.  If the Elbow drops deeply into the `-X` space (past the head) during the eccentric, they are preparing to do a Lat Pullover cheat.

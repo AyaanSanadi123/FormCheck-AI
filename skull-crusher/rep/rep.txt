@@ -1,0 +1,45 @@
+# SKULL CRUSHER REP LOGIC: DETAILED PHYSICS & SCORING REPORT
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE GEOMETRIC ENGINE: "THE SUPINE PIVOT"
+The Skull Crusher is an isolation movement performed lying down. Because the Normalizer pinned the Shoulder to (0,0) and mathematically rotated the user so their head is in the -X quadrant and feet are in the +X quadrant, the upper arm should be completely rigid in the +Y space (pointing to the ceiling).
+* **The Pivot (Elbow):** Must remain at its baseline (X, Y) coordinate above the chest.
+* **The Lever (Forearm):** Moves in a downward arc toward the head.
+* **The Metric:** We track the interior angle of `Shoulder -> Elbow -> Wrist`.
+    * ~180°: Arm is straight (Lockout/Start).
+    * 90° or less: Forearm is parallel to the floor (Max stretch).
+
+## 2. THE REP CYCLE (ECCENTRIC-FIRST STATE MACHINE)
+Because the user begins the lift at lockout and fights gravity downward, the standard state machine must be Eccentric-First.
+
+### State 1: IDLE (Lockout)
+* **Goal:** Arms extended upward, bracing for the rep.
+* **Trigger to ECCENTRIC:** Angular velocity becomes significantly negative (angle is decreasing rapidly below 160°).
+
+### State 2: ECCENTRIC (Lowering Phase)
+* **Goal:** Lower the bar under control toward the forehead.
+* **Peak Detection:** We track `min_drop_angle`. The moment angular velocity flips positive, the user is pushing the weight back up.
+
+### State 3: CONCENTRIC (Pushing Phase)
+* **Goal:** Contract the triceps to return to a 180° lockout.
+* **Completion:** The angle returns above 160°.
+
+---
+
+## 3. FAULT DETECTION MATRIX & SCORING HIERARCHY
+Following the blueprint, reps start at 100 points. We apply specific deductions based on mechanical severity.
+
+### Severe Deductions (-10 Points)
+**1. SHOULDER_SWING (The Lat Pullover Cheat)**
+* **The Cheat:** Letting the elbow drift backward over the head during the eccentric, then using the lats to heave it forward during the concentric.
+* **The Math:** Euclidean distance between the live `Elbow(x,y)` and the normalized `baseline_el(x,y)`. If this distance exceeds 0.20 "Arm Units", the mechanical anchor is broken.
+
+### Minor Deductions (-5 Points)
+**1. SHALLOW_DROP (Incomplete Eccentric)**
+* **The Cheat:** Stopping the bar high above the forehead to avoid the hardest part of the ROM.
+* **The Math:** Evaluated at the transition from ECCENTRIC to CONCENTRIC. If `min_drop_angle > 90.0°`, they shorted the stretch.
+
+**2. SHORT_LOCKOUT (Incomplete Concentric)**
+* **The Cheat:** Starting the next rep before fully locking out the triceps.
+* **The Math:** If a new ECCENTRIC phase begins (velocity flips negative) before the `current_angle` recovers to at least 160°.
