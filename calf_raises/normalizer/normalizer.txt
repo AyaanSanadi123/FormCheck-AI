@@ -1,0 +1,37 @@
+================================================================
+CALF RAISE NORMALIZER: STANDARDIZATION STANDARDS
+Version: 1.0 (Toe-Origin Canonical Pose)
+================================================================
+
+1. COMPONENT PURPOSE
+------------------------------
+Standardizes raw MediaPipe landmarks so that the Calf Raise 
+analysis is invariant to user height, camera distance, or 
+facing direction.
+
+2. STANDARDIZATION RULES
+----------------------------------
+A. Origin (Translation):
+- The Toe (ID 31/32) is set as (0,0). This ensures that 
+  the 'floor' is consistently anchored at Y=0 relative to the 
+  pivot of the foot.
+
+B. Facing (Reflection):
+- X-axis reflection is applied if the Gatekeeper detects the 
+  user is facing LEFT.
+- RESULT: The heel always resides at a NEGATIVE X-coordinate 
+  relative to the toe.
+
+C. Scale (Normalization):
+- All spatial data is divided by the 'scale_factor' (Torso Length).
+- RESULT: A heel rise of 0.2 units represents a consistent 
+  percentage of body size regardless of pixel resolution.
+
+
+
+3. IMPACT ON REP LOGIC
+-------------------------------
+By fixing the toe at the origin, the Rep Logic can verify 
+form using simple absolute thresholds (e.g., "Heel Y < -0.15") 
+rather than complex relative calculations.
+================================================================

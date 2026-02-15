@@ -1,0 +1,36 @@
+================================================================
+TRICEP EXTENSION REP LOGIC: STANDARDS & BIOMECHANICS
+Version: 1.0 (Strict Isolation Focus)
+================================================================
+
+1. PRIMARY METRIC
+-----------------
+* Elbow Extension Angle: Monitors the transition from stretch (<60°) 
+  to full lockout (>160°).
+* Shoulder-Elbow Fixation: Monitors the stability of the Humerus. 
+  The Elbow must remain the only moving pivot.
+
+2. STATE MACHINE (Down-First)
+-----------------------------
+1. IDLE: Bar held at chest height, triceps stretched.
+2. CONCENTRIC: The "Push" phase where the arm straightens.
+3. BOTTOM: Peak contraction/lockout point.
+4. ECCENTRIC: The "Return" phase where the bar rises.
+5. COMPLETE: Resets once the arm returns to the deep stretch position.
+
+3. FAULT DETECTION
+------------------
+* SHOULDER_DRIVE (-15): Detected when the shoulder-y coordinate 
+  shifts. Indicates the user is using their weight or chest to 
+  press the bar down.
+* SHORT_ROM (-20): Triggered if the user fails to fully stretch 
+  the triceps (top) or fully lock them out (bottom).
+
+
+
+4. TECHNICAL NOTES
+------------------
+Because the Normalizer anchors the Elbow at (0,0), any movement of 
+the shoulder is measured as a deviation from the calibrated -1.0 
+vertical position.
+================================================================

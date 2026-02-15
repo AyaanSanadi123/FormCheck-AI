@@ -4,21 +4,20 @@ import time
 class StandingLateralRaiseRep:
     def __init__(self, calibration_data):
         # --- CONFIGURATION ---
+        self.FPS = 30
         self.SCORE_MAX = 100
         
         # Baselines from Gatekeeper (Anatomical Proportions)
-        self.scale_factor = calibration_data.get('scale_factor', 1.0) # Torso length
-        self.arm_length_scale = calibration_data.get('arm_length', 1.0) # Secondary scale for some thresholds
+        self.torso_baseline = calibration_data.get('torso_baseline', 1.0)
+        self.arm_length = calibration_data.get('arm_length', 1.0)
         self.neutral_hip_x = calibration_data.get('neutral_hip_x', 0.5)
         
         # Thresholds
         self.THRESH_ABDUCTION = 80.0   # Target peak (degrees)
-        self.THRESH_MIN_START_ANGLE = 20.0 # Min angle for rep start
         self.THRESH_SHRUG = 0.10       # 10% reduction in torso length = shrug
-        self.THRESH_SWAY = 0.08        # Horizontal hip drift (normalized)
+        self.THRESH_SWAY = 0.08        # Horizontal hip drift
         self.THRESH_ASYMMETRY = 15.0   # Max degree difference L vs R
-        self.THRESH_DESCENT_SPEED = 0.5 # Normalized velocity threshold for controlled descent (y-axis)
-        self.THRESH_VELOCITY_GATE = 0.1 # Normalized velocity threshold for state changes
+        self.THRESH_DESCENT_SPEED = self.FPS * 0.2 # Raw velocity threshold for controlled descent
         
         # State Management
         self.state = "IDLE"
@@ -30,118 +29,85 @@ class StandingLateralRaiseRep:
         # Tracking
         self.max_angle = 0
         self.prev_wrist_y = 0
-        self.wrist_velocity = 0 # Vertical velocity of wrists
-        self.prev_time = 0
+        self.velocity = 0
 
-    def process(self, landmarks, raw_landmarks=None, timestamp=None):
-        """
-        Main Logic Pipeline, compliant with the blueprint.
-        """
+    def process(self, landmarks):
         if not landmarks:
             return None
 
-        # --- STEP 1: CALCULATE DT ---
-        dt = 0
-        if timestamp and self.prev_time:
-            dt = timestamp - self.prev_time
-        self.prev_time = timestamp
-
-        # --- STEP 2: FETCH JOINTS & CALCULATE METRICS ---
+        # 1. FETCH JOINTS (Normalized)
         l_sh, r_sh = landmarks[11], landmarks[12]
         l_wrist, r_wrist = landmarks[15], landmarks[16]
         l_hip, r_hip = landmarks[23], landmarks[24]
         
-        # Calculate abduction relative to the spine vector
+        # 2. REFINED VECTOR CALCULATIONS
+        # Calculate abduction relative to the spine vector, not screen vertical
         l_angle = self._get_abduction(l_hip, l_sh, l_wrist)
         r_angle = self._get_abduction(r_hip, r_sh, r_wrist)
         avg_angle = (l_angle + r_angle) / 2
 
-        # PROPORTIONAL SHRUG DETECTION
+        # 3. PROPORTIONAL SHRUG DETECTION
+        # Measure current distance between shoulder and hip
         curr_torso_l = np.linalg.norm([l_sh.x - l_hip.x, l_sh.y - l_hip.y])
-        shrug_ratio = curr_torso_l / self.scale_factor if self.scale_factor else 1.0
+        shrug_ratio = curr_torso_l / self.torso_baseline
 
-        # TORSO SWAY (MOMENTUM)
+        # 4. TORSO SWAY (MOMENTUM)
         curr_hip_x = (l_hip.x + r_hip.x) / 2
-        sway_dist = abs(curr_hip_x - self.neutral_hip_x) / self.scale_factor if self.scale_factor else 0
+        sway_dist = abs(curr_hip_x - self.neutral_hip_x)
 
-        # VERTICAL WRIST VELOCITY
+        # 5. VELOCITY TRACKING
         curr_wrist_y = (l_wrist.y + r_wrist.y) / 2
-        if dt > 0:
-            self.wrist_velocity = (curr_wrist_y - self.prev_wrist_y) / dt
+        if self.prev_wrist_y != 0:
+            self.velocity = (curr_wrist_y - self.prev_wrist_y) * self.FPS
         self.prev_wrist_y = curr_wrist_y
 
-        # --- STEP 3: STATE MACHINE & FAULT DETECTION ---
+        # --- STATE MACHINE ---
         
         if self.state == "IDLE":
-            self.feedback_buffer = "Ready"
-            # Trigger CONCENTRIC when arms start moving up and past minimum angle
-            if avg_angle > self.THRESH_MIN_START_ANGLE and self.wrist_velocity < -self.THRESH_VELOCITY_GATE:
+            if avg_angle > 20 and self.velocity < -0.1:
                 self._start_rep()
-                self.state = "CONCENTRIC"
+                self.state = "ASCENDING"
 
-        elif self.state == "CONCENTRIC":
-            self.feedback_buffer = "Raise Arms!"
+        elif self.state == "ASCENDING":
             self.max_angle = max(self.max_angle, avg_angle)
             
-            # FAULT: Shrugging
+            # FAULT: Shrugging (Torso "shortens" as shoulders rise to ears)
             if shrug_ratio < (1.0 - self.THRESH_SHRUG):
                 self._add_fault("SHRUGGING", 15, "Keep Shoulders Down")
 
             # FAULT: Sway (Using momentum)
             if sway_dist > self.THRESH_SWAY:
-                self._add_fault("BODY_SWAY", 10, "No Body Sway")
+                self._add_fault("BODY_SWAY", 10, "Stop the Body Swing")
 
             # FAULT: Asymmetry
             if abs(l_angle - r_angle) > self.THRESH_ASYMMETRY:
                 self._add_fault("ASYMMETRY", 10, "Raise Arms Evenly")
 
-            # Transition to TOP when vertical velocity near zero at peak
-            if abs(self.wrist_velocity) < self.THRESH_VELOCITY_GATE:
-                self.state = "TOP"
+            if self.velocity > 0.05 and avg_angle > 45:
+                self.state = "DESCENDING"
                 if self.max_angle < self.THRESH_ABDUCTION:
-                    self._add_fault("SHALLOW_ROM", 15, "Reach Shoulder Height")
+                    self._add_fault("SHALLOW", 15, "Reach Shoulder Height")
 
-        elif self.state == "TOP":
-            self.feedback_buffer = "Hold"
-            # Transition to ECCENTRIC when arms start moving down
-            if self.wrist_velocity > self.THRESH_VELOCITY_GATE:
-                self.state = "ECCENTRIC"
-
-        elif self.state == "ECCENTRIC":
-            self.feedback_buffer = "Lower slowly..."
+        elif self.state == "DESCENDING":
             # FAULT: Uncontrolled Descent Speed
-            if self.wrist_velocity > self.THRESH_DESCENT_SPEED:
-                self._add_fault("CONTROL", 10, "Lower Slower!")
+            if self.velocity > self.THRESH_DESCENT_SPEED:
+                self._add_fault("CONTROL", 10, "Lower Slowly!")
 
-            # Transition to COMPLETE when arms are back at starting angle
-            if avg_angle < self.THRESH_MIN_START_ANGLE:
-                self.state = "COMPLETE"
+            if avg_angle < 25:
+                self._finalize_rep_success()
+                self.state = "IDLE"
 
-        elif self.state == "COMPLETE":
-            self._finalize_rep_success()
-            self.state = "IDLE"
-
-        # --- STEP 4: PACKAGE OUTPUT ---
-        packet = {
+        return {
             "state": self.state,
             "reps": self.rep_count,
             "score": self.current_score,
-            "feedback": self.feedback_buffer, 
+            "feedback": self.feedback_buffer,
+            "angle": int(avg_angle),
             "faults": list(set([f['code'] for f in self.faults])),
-            "coords": landmarks,
-            "raw_coords": raw_landmarks,
-            "metrics": {
-                "l_angle": int(l_angle),
-                "r_angle": int(r_angle),
-                "avg_angle": int(avg_angle),
-                "wrist_velocity": self.wrist_velocity,
-                "shrug_ratio": shrug_ratio,
-                "sway_dist": sway_dist
-            }
+            "coords": landmarks
         }
-        return packet
 
-    # --- HELPERS ---
+    # --- MATH HELPERS ---
 
     def _get_abduction(self, hip, sh, wrist):
         """

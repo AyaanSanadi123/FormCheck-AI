@@ -1,0 +1,37 @@
+================================================================
+CALF RAISE REP LOGIC: PERFORMANCE STANDARDS
+Version: 1.0 (Isolation Tracking)
+================================================================
+
+1. PRIMARY METRIC
+-----------------
+* Peak Elevation: Vertical Y-displacement of the Heel (30) 
+  relative to the anchored Toe (0,0).
+* Knee-Lock Stability: Angular variance of the knee joint.
+
+2. STATE MACHINE (Up-First)
+---------------------------
+1. IDLE: Heel is grounded (Y > -0.05).
+2. CONCENTRIC: Active plantarflexion phase.
+3. TOP: Peak contraction reached at Y < -0.18 normalized units.
+4. ECCENTRIC: Controlled lengthening phase.
+
+3. FAULT DETECTION & SCORING
+----------------------------
+* KNEE_BEND (-15): Detected if the knee angle drops below 165°. 
+  This indicates the user is using leg drive (quads/glutes) 
+  rather than isolating the calves.
+* DROP_SPEED (-10): Triggered by eccentric velocity > 2.0 units/sec. 
+  Fast drops increase Achilles strain and reduce time-under-tension.
+* PARTIAL_ROM (-20): Triggered if the user returns to IDLE without 
+  crossing the TOP threshold.
+
+
+
+4. BIOMECHANICAL NOTES
+----------------------
+The use of the scale_factor (Torso Length) ensures that the 
+elevation threshold (-0.18) is proportional to the user's size, 
+preventing taller users from having an unfair difficulty spike 
+compared to shorter users.
+================================================================

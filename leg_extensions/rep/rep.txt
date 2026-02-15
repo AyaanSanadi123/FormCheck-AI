@@ -1,0 +1,39 @@
+================================================================
+SEATED LEG EXTENSION REP LOGIC: BRAIN & SCORING STANDARDS
+Version: 1.0 (Concentric-First Machine Logic)
+================================================================
+
+1. CORE METRICS
+---------------
+* Extension Height: Measured by Ankle Y-coordinate relative to 
+  the Knee (0,0).
+* Eccentric Velocity: The speed of the leg lowering phase.
+* Knee Stability: Vertical drift of the pivot point indicating 
+  pelvic displacement (Butt-Lift).
+
+2. STATE MACHINE PHASES
+-----------------------
+1. IDLE: Legs at rest (< -0.1 Y).
+2. CONCENTRIC: Active kicking motion toward full extension.
+3. TOP: Momentary pause/peak contraction at > 170° (-0.8 Y).
+4. ECCENTRIC: Controlled lowering of the weight stack.
+
+3. SCORING & FAULTS (Start: 100)
+--------------------------------
+* BUTT_LIFT (-10): Occurs if the knee rises > 0.15 units. 
+  Indicates the user is pulling on handles to compensate for 
+  excessive weight.
+* CONTROL (-15): Triggered if eccentric velocity exceeds 2.5 
+  units/sec. Increases risk of joint impact.
+* PARTIAL_ROM (-15): If the state machine transitions to 
+  ECCENTRIC before reaching the TOP threshold.
+
+
+
+4. TECHNICAL NOTES
+------------------
+- Uses normalized coordinates from the Normalizer where Thigh 
+  Length = 1.0.
+- Velocity is calculated using delta time (dt) to ensure 
+  consistency across hardware.
+================================================================

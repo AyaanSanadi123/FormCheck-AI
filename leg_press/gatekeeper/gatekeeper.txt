@@ -1,0 +1,34 @@
+================================================================
+LEG PRESS GATEKEEPER: OBJECTIVES & STRATEGY
+Version: 1.0 (Sagittal Profile Calibration)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Verifies that the user is seated in a leg press machine with a 
+clear side-profile view. Establishes the torso scale to measure 
+relative sled depth and hip migration.
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Visibility:
+- Primary focus: Hip (24), Knee (26), Ankle (28).
+- High confidence (>0.85) required to ensure machine handles or 
+  padding are not obscuring the joint pivots.
+
+B. Orientation:
+- Sagittal Plane Check: Ensures the user isn't facing the camera 
+  directly (Z-depth variance check).
+
+C. Initial State:
+- Start Extension: Legs must be > 140° (Extended) to verify 
+  calibration occurs at the lockout/rest position rather than 
+  mid-compression.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* scale_factor: Torso length (Shoulder-Hip). Normalizes sled 
+  depth across different machine sizes.
+* hip_y_anchor: Critical for detecting "Butt-Wink" (Hip migration) 
+  during the bottom of the rep.
+================================================================

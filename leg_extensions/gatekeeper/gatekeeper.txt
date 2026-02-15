@@ -1,0 +1,55 @@
+================================================================
+SEATED LEG EXTENSION GATEKEEPER: OBJECTIVES & STRATEGY
+Version: 1.0 (Profile Anchor & Calibration)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+The Gatekeeper ensures the user is seated in a side-profile position 
+with the camera viewing the primary mechanical pivot (the knee). 
+It establishes anatomical baselines to normalize leg length and 
+detect "Butt-Lift" cheating during high-intensity sets.
+
+2. VALIDATION REQUIREMENTS (Method: check)
+------------------------------------------
+A. Visibility Check:
+- Requires visibility (> 0.85) for Shoulder (12), Hip (24), 
+  Knee (26), Ankle (28), and Foot (32).
+- If any lower-body landmark is obscured by machine padding, 
+  calibration is rejected.
+
+B. Orientation & Active Side:
+- Profile Check: Measures Z-depth variance between shoulders. 
+  A depth difference < 0.20 indicates the user is facing the 
+  camera, which is invalid for sagittal plane analysis.
+- Active Side Detection: Automatically determines "LEFT" or "RIGHT" 
+  side based on which hip has higher visibility confidence.
+
+C. Initial State:
+- To prevent mid-set calibration, the leg must be in a "Tucked" 
+  position (Knee Flexion < 110°). Calibration will not proceed 
+  if the leg is already extended.
+
+
+
+3. STABILITY & CALIBRATION (Buffer: 45 Frames)
+----------------------------------------------
+The system requires the user to hold the starting position for 
+~1.5 seconds (at 30 FPS) to calculate stable baselines:
+
+* scale_factor: Calculated as the 2D Euclidean distance between 
+  the Hip and the Knee (Thigh Length).
+* knee_y_anchor: The vertical coordinate of the knee at rest. 
+  Used to detect if the user's hips lift off the seat during 
+  extension.
+* hip_y_anchor: Establishes the seated pelvic baseline.
+
+4. FEEDBACK STRATEGY
+--------------------
+- "Rotate 90 degrees": Triggered by insufficient Z-depth.
+- "Lower the weight": Triggered if the starting angle is too wide.
+- "Hold position...": Visual progress bar for the stability buffer.
+
+
+
+================================================================

@@ -1,0 +1,27 @@
+================================================================
+PREACHER CURL VISUALIZER: RENDERING STANDARDS
+Version: 1.0 (Isolation Tracking UI)
+================================================================
+
+1. VISUAL FOCUS
+---------------
+The visualizer emphasizes the 'Pad Contact Zone'. The segment 
+from the Shoulder to the Elbow turns RED if the 'ELBOW_LIFT' 
+fault is detected, indicating the humerus is no longer flush 
+with the preacher bench.
+
+2. HUD ELEMENTS
+---------------
+* Header: Shows Rep count, current Elbow Flexion Angle, and Score.
+* Angle Tracker: Displays real-time degrees to help the user 
+  visualize the ROM requirement (e.g., reaching > 160°).
+
+
+
+3. FEEDBACK TOASTS
+------------------
+* "KEEP ARMS FLUSH": Warning for elbow lift.
+* "EXTEND FULLY": Encouragement to hit the bottom range.
+* "SQUEEZE AND HOLD": Triggered at the TOP state.
+
+================================================================

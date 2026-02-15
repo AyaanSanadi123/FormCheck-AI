@@ -1,0 +1,41 @@
+================================================================
+SEATED LEG EXTENSION NORMALIZER: STANDARDIZATION LOGIC
+Version: 1.0 (Knee-Origin Canonical Pose)
+================================================================
+
+1. COMPONENT PURPOSE
+------------------------------
+Standardizes raw MediaPipe output into a coordinate system where 
+the Knee is the origin (0,0) and the user's thigh length equals 1.0. 
+This ensures the Rep Logic math remains constant regardless of 
+camera distance or user height.
+
+2. STANDARDIZATION RULES
+----------------------------------
+A. Origin (Translation):
+- The Knee (ID 25/26) is the primary mechanical pivot for this 
+  exercise. It is moved to (0,0) to simplify angular and 
+  velocity calculations of the lower leg.
+
+B. Facing (Reflection):
+- If the user is facing LEFT (detected by the Gatekeeper), the 
+  X-coordinates are inverted. 
+- RESULT: In the normalized space, the foot always kicks toward 
+  the POSITIVE X-axis.
+
+C. Scale (Normalization):
+- All coordinates are divided by the 'scale_factor' (Baseline 
+  Thigh Length).
+- RESULT: The Hip will always be located at approximately (-1, 0) 
+  when the thigh is horizontal, providing a consistent lever 
+  reference.
+
+
+
+3. IMPACT ON PIPELINE
+-------------------------------
+By rectifying the coordinate system here, the Rep Logic can 
+use hard-coded thresholds (e.g., "Ankle Y must reach > 0.8") 
+without needing to know the user's physical height or the 
+camera's zoom level.
+================================================================

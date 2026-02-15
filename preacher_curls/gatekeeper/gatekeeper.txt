@@ -1,0 +1,33 @@
+================================================================
+PREACHER CURL GATEKEEPER: OBJECTIVES & STRATEGY
+Version: 1.0 (Fixed-Pivot Calibration)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Ensures the user is positioned sideways with their upper arm 
+supported by a preacher bench. Establishes the Humerus (Upper Arm) 
+as the scale factor for movement normalization.
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Visibility:
+- Primary focus: Shoulder (11/12), Elbow (13/14), and Wrist (15/16).
+- High visibility (>0.85) ensures the arm is not hidden behind 
+  the bench structure.
+
+B. Orientation:
+- Z-Depth Variance: Confirms a sagittal view to accurately measure 
+  the pivot angle of the elbow.
+
+C. Initial State (Full Extension):
+- Requires an initial elbow angle > 150°. This ensures the user 
+  starts from the most vulnerable/important part of the ROM.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* scale_factor: Humerus length. Used to normalize the forearm 
+  swing radius.
+* elbow_y_anchor: The static vertical position of the elbow. 
+  Essential for detecting "Elbow Lift" (cheating) during the rep.
+================================================================

@@ -1,0 +1,36 @@
+================================================================
+PREACHER CURL REP LOGIC: STANDARDS & BIOMECHANICS
+Version: 1.0 (Strict Isolation Focus)
+================================================================
+
+1. PRIMARY METRIC
+-----------------
+* Elbow Flexion Angle: Measures the angle between Shoulder-Elbow-Wrist.
+* Shoulder Stability: Measures vertical Y-displacement of the shoulder 
+  to ensure the upper arm remains fixed against the bench pad.
+
+2. STATE MACHINE (Up-First)
+---------------------------
+1. IDLE: Arm extended on the pad (Angle > 160°).
+2. CONCENTRIC: Forearm moving toward the shoulder.
+3. TOP: Peak contraction reached (Angle < 45°).
+4. ECCENTRIC: Controlled lowering toward the bottom of the bench.
+5. COMPLETE: Transitions back to IDLE once full extension is met.
+
+3. FAULT DETECTION
+------------------
+* ELBOW_LIFT (-15): Triggered if the shoulder migrates vertically. 
+  Indicates the user is "peeling" their arm off the pad to use 
+  momentum or front delts.
+* SHORT_ROM (-20): Triggered if the user fails to reach at least 
+  160° extension. This is critical as the preacher curl provides 
+  maximum tension at the bottom.
+
+
+
+4. TECHNICAL NOTES
+------------------
+By anchoring the Elbow at (0,0) in the Normalizer, the shoulder 
+should theoretically reside at (0, -1.0) in normalized units. 
+Any drift from this Y-coordinate indicates poor pad contact.
+================================================================

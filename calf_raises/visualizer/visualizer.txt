@@ -1,0 +1,31 @@
+================================================================
+CALF RAISE VISUALIZER: RENDERING STANDARDS
+Version: 1.0 (Plantarflexion Overlay)
+================================================================
+
+1. COMPONENT PURPOSE
+--------------------
+Accepts Rep Logic packets to provide visual reinforcement of 
+heel elevation and knee stability.
+
+2. VISUAL ELEMENTS
+------------------
+* Primary Lever: Connects Knee to Ankle to Heel. The segment 
+  between the Knee and Ankle turns RED if 'KNEE_BEND' is detected 
+  during the concentric phase.
+* Ground Anchor: A reference line drawn at the Toe (origin) 
+  to visualize the vertical gap created by the heel lift.
+
+3. COLOR & HUD STANDARDS
+------------------------
+* Follows Blueprint: Green (Good), Orange (Warning), Red (Fail).
+* HUD: Top-aligned black bar showing Reps, State, and Score.
+* Toast: Centered bottom feedback (e.g., "HOLD AT THE TOP").
+
+
+
+4. ROBUSTNESS
+-------------
+* If the user moves out of frame (packet=None), the visualizer 
+  renders a "SEARCHING..." warning instead of crashing.
+================================================================

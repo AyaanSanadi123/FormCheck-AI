@@ -1,0 +1,38 @@
+================================================================
+SEATED LEG EXTENSION VISUALIZER: RENDERING STANDARDS
+Version: 1.0 (Pivot-Centric UI)
+================================================================
+
+1. RENDERING HIERARCHY
+----------------------
+The visualizer prioritizes the Knee Pivot (26) and the Ankle Path (28). 
+As an isolation exercise, the UI should focus on the steady rotation 
+of the shin lever while the thigh remains stationary.
+
+2. VISUAL FEEDBACK TRIGGERS
+---------------------------
+* Knee Pivot: Highlighted with a Magenta crosshair or pulsing circle. 
+  Turns RED if 'BUTT_LIFT' is detected in the packet faults.
+* Shin Lever: A solid GREEN line connects the knee to the ankle. 
+  This line turns ORANGE if the eccentric velocity (lowering speed) 
+  is near the threshold.
+
+
+
+3. HUD & TOAST STANDARDS
+------------------------
+* Header: Black semi-transparent bar at the top containing Rep Count, 
+  State Machine status, and real-time Score.
+* Performance Toast: Feedback like "KICK HIGHER" or "LOWER SLOWLY" 
+  is centered at the bottom of the frame with a high-contrast 
+  background.
+
+4. COORDINATE MAPPING
+---------------------
+- Uses 'raw_coords' for pixel-perfect skeleton overlay on the 
+  original video frame.
+- Uses 'metrics' (velocity/ankle_y) to drive dynamic gauge 
+  elements if implemented in future iterations.
+
+
+================================================================

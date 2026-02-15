@@ -1,0 +1,37 @@
+================================================================
+LEG PRESS NORMALIZER: STANDARDIZATION LOGIC
+Version: 1.0 (Hip-Origin Canonical Pose)
+================================================================
+
+1. COMPONENT PURPOSE
+------------------------------
+Standardizes the coordinate system so that the machine seat (Hip) 
+is the center of the world. This allows the Rep Logic to 
+measure sled "Depth" as a simple X/Y displacement of the ankle 
+relative to the seat.
+
+2. STANDARDIZATION RULES
+----------------------------------
+A. Origin (Translation):
+- The Hip (ID 23/24) is moved to (0,0). Since the hip is 
+  pressed against the seat, this creates a static reference 
+  point for the entire kinetic chain.
+
+B. Facing (Reflection):
+- If the Gatekeeper detects a LEFT side profile, X is inverted.
+- RESULT: The legs always extend toward the POSITIVE X-axis.
+
+C. Scale (Normalization):
+- All spatial data is divided by the 'scale_factor' (Torso Length).
+- RESULT: A displacement of 1.0 unit corresponds to one torso 
+  length of movement, making depth thresholds universal.
+
+
+
+3. IMPACT ON REP LOGIC
+-------------------------------
+By normalizing to the Hip, 'Butt-Wink' or Hip-Lift detection 
+becomes straightforward: if the normalized Hip-Y deviates 
+significantly from 0.0, the user is losing contact with the 
+seat padding.
+================================================================

@@ -1,0 +1,25 @@
+================================================================
+TRICEP EXTENSION VISUALIZER: RENDERING STANDARDS
+Version: 1.0 (Isolation Tracking UI)
+================================================================
+
+1. VISUAL PRIORITY
+------------------
+The visualizer focuses on the 'Shoulder-Elbow Axis'. If the shoulder 
+migrates from its vertical anchor, the 'Pivot Lock' circle at the 
+elbow turns RED, indicating the movement is no longer isolated.
+
+2. HUD ELEMENTS
+---------------
+* Header: Real-time Rep count and Extension Angle.
+* Extension Angle: Specifically tracks the 'Lockout' angle to 
+  encourage the user to reach >160° at the bottom.
+
+
+
+3. FEEDBACK TOASTS
+------------------
+* "PIN ELBOWS AT SIDES": High-priority warning for shoulder drive.
+* "SQUEEZE AT THE BOTTOM": Triggered during the peak lockout.
+* "CONTROL THE RISE": Triggered during the eccentric phase.
+================================================================

@@ -1,0 +1,33 @@
+================================================================
+CALF RAISE GATEKEEPER: OBJECTIVES & STRATEGY
+Version: 1.0 (Sagittal Foot Alignment)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Ensures the user is positioned in a side-profile view to accurately 
+measure the vertical displacement of the calcaneus (heel) relative 
+to the metatarsals (toes).
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Visibility:
+- Focuses on the lower kinetic chain (24-32). 
+- All critical joints must exceed 0.85 visibility.
+
+B. Profile Depth:
+- Uses shoulder Z-depth variance (> 0.20) to ensure the user is not 
+  facing the camera directly.
+
+C. Starting Geometry:
+- Requires "Feet Flat." Calibration resets if the user begins 
+  mid-rep or with heels already elevated.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* active_side: "LEFT" or "RIGHT" based on joint visibility.
+* scale_factor: Torso length used to normalize heel elevation.
+* floor_y: Established Y-coordinate for the ground plane.
+* heel_y_baseline: Baseline Y for the heel at rest.
+
+================================================================

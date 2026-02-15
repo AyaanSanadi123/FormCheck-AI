@@ -1,0 +1,36 @@
+================================================================
+LEG PRESS REP LOGIC: STANDARDS & SAFETY
+Version: 1.0 (Joint Protection focus)
+================================================================
+
+1. CORE METRICS
+---------------
+* Knee Flexion Angle: Monitors depth (Bottom) and dangerous lockouts (Top).
+* Pelvic Displacement (Butt-Wink): Tracks if the Hip (Origin) migrates 
+  off the baseline seat Y-coordinate.
+* Knee Tracking: Monitors lateral (X-axis) deviation of the knee 
+  relative to the ankle.
+
+2. STATE MACHINE (Down-First)
+-----------------------------
+1. IDLE: Legs extended, sled stationary.
+2. ECCENTRIC: Controlled lowering phase. Minimum depth requirement: 0.65 units.
+3. BOTTOM: Momentary transition point.
+4. CONCENTRIC: Power phase pushing the sled back.
+5. COMPLETE: Finalizes scoring and increments rep count.
+
+3. FAULT DETECTION
+------------------
+* KNEE_LOCKOUT (-25): Triggered if knee angle > 175°. High risk for 
+  joint injury under heavy load.
+* BUTT_WINK (-15): Pelvis lifting off the seat. Causes lumbar 
+  rounding and spinal risk.
+* KNEE_VALGUS (-10): Knees caving inward during the push.
+
+
+
+4. TECHNICAL NOTES
+------------------
+Uses scale_factor (Torso) to ensure a "deep" rep (0.65) is 
+proportionally consistent regardless of the user's height.
+================================================================

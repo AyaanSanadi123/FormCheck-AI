@@ -1,0 +1,34 @@
+================================================================
+TRICEP EXTENSION GATEKEEPER: OBJECTIVES & STRATEGY
+Version: 1.0 (Sagittal Profile Calibration)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Ensures the user is positioned sideways for accurate sagittal 
+analysis. Establishes the Humerus length as the scale factor 
+to normalize the elbow's pivot radius.
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Visibility:
+- Primary focus: Shoulder (11/12), Elbow (13/14), and Wrist (15/16).
+- The hip (23/24) must also be visible to monitor torso lean.
+
+B. Orientation:
+- Z-Depth Variance: Confirms a side view. Frontal views are 
+  rejected as they obscure the forearm-to-humerus angle.
+
+C. Posture (Leaning):
+- Detects if the user is leaning their body weight into the 
+  bar (dx/dy angle from vertical). This ensures calibration 
+  happens in a neutral, strict form position.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* scale_factor: Humerus length. Used to normalize the wrist's 
+  swing radius.
+* shoulder_x_anchor: Establishes the static X-plane. Any 
+  significant drift in the elbow's X-coordinate relative to 
+  this anchor during a rep indicates "Shoulder Drive" (cheating).
+================================================================

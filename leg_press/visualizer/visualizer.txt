@@ -1,0 +1,29 @@
+================================================================
+LEG PRESS VISUALIZER: RENDERING STANDARDS
+Version: 1.0 (Safety-First UI)
+================================================================
+
+1. VISUAL PRIORITY
+------------------
+The visualizer focuses on the 'Safety Pivots':
+* Hip Pivot: Highlights pelvic stability. Turns RED if the user's 
+  lower back rounds or lifts off the seat.
+* Knee Pivot: Highlights joint safety. Pulses RED if the user 
+  locks their knees at the top of the movement.
+
+2. HUD ELEMENTS
+---------------
+* Header: Standardized display for Reps, State, and Quality Score.
+* Depth Tracker: A vertical gauge on the right side of the screen 
+  illustrating the ankle's Y-position relative to the Hip-origin.
+
+
+
+3. FEEDBACK TOASTS
+------------------
+* "AVOID LOCKING KNEES": High-priority warning triggered by 
+  dangerous extension angles.
+* "KEEP BACK FLAT": Triggered by hip migration/butt-wink.
+* "PUSH!": Encouragement during the bottom transition.
+
+================================================================

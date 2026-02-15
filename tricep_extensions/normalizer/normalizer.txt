@@ -1,0 +1,38 @@
+================================================================
+TRICEP EXTENSION NORMALIZER: STANDARDIZATION LOGIC
+Version: 1.0 (Elbow-Origin Canonical Pose)
+================================================================
+
+1. COMPONENT PURPOSE
+------------------------------
+Standardizes the coordinate system so that the primary pivot 
+point (the Elbow) is the center of the world (0,0). This enables 
+the detection of minute form errors that would be lost in 
+unnormalized pixel space.
+
+2. STANDARDIZATION RULES
+----------------------------------
+A. Origin (Translation):
+- The Elbow (ID 13/14) is set to (0,0). In a perfect rep, the 
+  Shoulder should reside at roughly (0, -1.0) and the Wrist 
+  should rotate in an arc around the origin.
+
+B. Facing (Reflection):
+- X-axis is reflected if the user is facing LEFT.
+- RESULT: The "Pushdown" or "Extension" always travels into the 
+  POSITIVE X region of the coordinate plane.
+
+C. Scale (Normalization):
+- All spatial data is divided by the 'scale_factor' (Humerus Length).
+- RESULT: Movement is measured in "Arm Lengths" rather than pixels, 
+  making the logic invariant to camera distance.
+
+
+
+3. IMPACT ON REP LOGIC
+-------------------------------
+By anchoring the Elbow at (0,0), "Shoulder Drive" is identified 
+if the Shoulder-Y moves significantly from -1.0. "Partial Reps" 
+are identified by checking if the Wrist-X reaches its maximum 
+theoretical distance from the origin.
+================================================================
