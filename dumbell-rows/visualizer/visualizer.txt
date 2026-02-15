@@ -1,0 +1,22 @@
+# ONE ARM ROW VISUALIZER: STRATEGY & UX
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE CHALLENGE: "VISUALIZING INVISIBLE MECHANICS"
+The user cannot see their back angle or the trajectory of the dumbbell while looking at the floor/bench. The visualizer must provide immediate, high-contrast feedback on these two specific mechanics: the Torso Heave and the J-Curve.
+
+## 2. THE VISUAL SOLUTIONS
+
+### A. The "Torso Metronome" (Back Angle)
+* **Concept:** We draw a thick line connecting the active Hip to the active Shoulder. 
+* **Visual:** * Green/White = Torso is stable and close to the original setup angle.
+    * Flashing Red = "TORSO_HEAVE" fault. The line turns red and thickens, instantly warning the user that they are using their lower back to cheat the weight up.
+
+### B. The "J-Curve Tracer" (Wrist Path)
+* **Concept:** A trailing path history that tracks the wrist's exact X/Y coordinates in pixel space.
+* **Visual:** As the user pulls, the line should naturally form a swooping "J" shape (pulling up and back towards the hip).
+    * Cyan = Good path.
+    * Yellow = "BICEP_PULL" (the line goes straight up and down vertically) or "SHORT_PULL" (the line doesn't go high enough).
+
+### C. HUD & Standardization
+* Follows the `PIPELINE_BLUEPRINT.md` color requirements: Green for passing, Orange/Yellow for minor ROM faults, Red for severe mechanical breakdowns.

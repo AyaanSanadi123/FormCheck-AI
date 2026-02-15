@@ -1,0 +1,44 @@
+# ONE ARM ROW REP LOGIC: DETAILED PHYSICS & SCORING REPORT
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE GEOMETRIC ENGINE: "THE J-CURVE & THE PLUMB LINE"
+Because the Normalizer anchored the Hip at (0,0) and oriented the Head to +X (Right):
+* **The Torso:** Sits as a diagonal line in the +X, +Y quadrant. 
+* **The Arm:** Starts hanging down in the +X, -Y quadrant.
+* **The Pull:** A perfect row (the J-Curve) means the Wrist must travel UP (+Y) and BACK (-X, towards the origin hip).
+
+## 2. THE REP CYCLE ("UP-FIRST" STATE MACHINE)
+Because the user begins the lift from a dead hang, the state machine must be Up-First.
+
+### State 1: IDLE (Dead Hang)
+* **Goal:** Arm fully extended, waiting to pull.
+* **Trigger to CONCENTRIC:** The Wrist's Y-velocity becomes significantly positive (the dumbbell is moving upward).
+
+### State 2: CONCENTRIC (The Pull)
+* **Goal:** Pull the dumbbell up and back to the hip/ribcage.
+* **Peak Detection:** We track the maximum height of the elbow (`max_elbow_y`) and the furthest backward travel of the wrist (`min_wrist_x`). 
+* **Trigger to ECCENTRIC:** The Wrist's Y-velocity crosses zero and becomes negative (the dumbbell is dropping).
+
+### State 3: ECCENTRIC (The Drop)
+* **Goal:** Lower the dumbbell back to a dead hang under control.
+* **Completion:** The elbow angle opens back up > 150°, signaling a return to the IDLE state.
+
+---
+
+## 3. FAULT DETECTION MATRIX & SCORING HIERARCHY
+Following the blueprint, reps start at 100 points. We apply specific deductions based on mechanical severity.
+
+### Severe Deductions (-10 Points)
+**1. TORSO_HEAVE (The Lawnmower Cheat)**
+* **The Problem:** Using the lower back to violently jerk the torso upward to create momentum, completely bypassing the lat.
+* **The Math:** We calculate the live `current_torso_angle` using `Shoulder.y` and `Shoulder.x` (since Hip is 0,0). If this angle exceeds the user's personal `setup_torso_angle` (from the Gatekeeper) by more than 15 degrees, they broke their back angle.
+
+### Minor Deductions (-5 Points)
+**1. BICEP_PULL (Straight-Up Pull)**
+* **The Problem:** Pulling the dumbbell straight up to the chest instead of dragging it back to the hip.
+* **The Math:** Evaluated at the top of the concentric phase. If the Wrist's X-coordinate did not travel backward (-X) by at least 0.15 "Torso Units" relative to its starting position, it was a vertical bicep pull.
+
+**2. SHORT_PULL (Incomplete ROM)**
+* **The Problem:** Failing to pull the elbow high enough to fully contract the lat.
+* **The Math:** Evaluated at the top of the concentric phase. The Elbow's Y-coordinate must cross or get very close to the Shoulder's Y-coordinate. If `max_elbow_y < Shoulder.y - 0.10`, the pull was too shallow.

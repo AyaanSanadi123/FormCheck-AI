@@ -1,0 +1,21 @@
+# INCLINE PRESS GATEKEEPER: STRATEGY & LOGIC
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE VIEWPOINT & OCCLUSION
+The Incline Press requires a sagittal (side-profile) view to accurately measure the elbow angle and the trajectory of the wrist. 
+* **Blueprint Compliance:** The Gatekeeper uses a helper to determine the `active_side` based on visibility, ensuring we only track the side facing the camera and discard occluded landmarks.
+
+## 2. THE SETUP HEURISTICS (GEOMETRY CHECK)
+To begin tracking, the user must be lying on an incline bench with the weight pressed straight up over their upper chest/shoulders, ready to begin the eccentric (lowering) phase.
+
+* **The Incline Check:** The angle of the `Shoulder -> Hip` vector relative to the horizontal plane must be between 25° and 65°. (This filters out flat bench presses and strictly vertical overhead presses).
+* **The Lockout Check:** The arms must be fully extended upward. The interior angle of `Shoulder -> Elbow -> Wrist` must be > 150°.
+* **The Verticality Check:** The wrist and elbow must physically be above the shoulder (in MediaPipe, `Y` decreases as it goes UP).
+
+## 3. STABILITY & CALIBRATION
+* **Stability:** The user must hold this top position steady for a specified buffer (e.g., 45 frames) before passing the check.
+* **Calibration Data (The Passport):** Must output a dictionary containing `active_side`, `facing_side`, and the crucial `scale_factor`.
+    * *Scale Factor:* We will use the Torso Length (Shoulder to Hip) as the universal unit of measurement.
+    * *Origin:* We will capture `shoulder_origin_x` and `y` so the Normalizer can translate the primary mechanical pivot to `(0,0)`.
+    * *Setup Angle:* We will capture `setup_torso_angle` to catch users who bridge their hips off the bench later in the Rep Logic.

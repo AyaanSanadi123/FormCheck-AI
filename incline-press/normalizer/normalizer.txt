@@ -1,0 +1,21 @@
+# INCLINE PRESS NORMALIZER: STRATEGY & MATH
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE CANONICAL POSE
+Per the pipeline blueprint, the Normalizer creates a universal geometric standard. For the Incline Press, the mechanical pivot is the shoulder joint.
+
+Our Canonical Pose is defined as:
+* **The Pivot (Origin):** The active **Shoulder** is locked at `(0, 0)`.
+* **The Y-Axis (Vertical):** Inverted. Pushing the weight up towards the ceiling is positive (`+Y`).
+* **The X-Axis (Horizontal):** Normalized so the user is always facing RIGHT. Pushing the weight forward (away from the chest) is positive (`+X`).
+* **The Scale:** All coordinates are divided by the `scale_factor` (Torso Length) captured by the Gatekeeper.
+
+## 2. MATHEMATICAL PROOFS FOR THE FLIP
+The Gatekeeper passes a `facing_side` multiplier (+1.0 for Right, -1.0 for Left).
+* By calculating `(Raw.x - Origin.x) * facing_side`, we mathematically mirror left-facing users across the Y-axis. 
+* The Rep Logic can now blindly assume the user is pressing into the `+X, +Y` quadrant.
+
+## 3. IMPACT ON REP LOGIC
+1. **The Wrist & Elbow:** Because the Shoulder is `(0,0)`, the Wrist and Elbow will both live entirely in the positive `+Y` space above the shoulder.
+2. **The "Unstacked" Fault:** We can easily compare `Wrist.x` to `Elbow.x` to see if the user's forearm is perfectly vertical. If `Wrist.x` is significantly larger or smaller than `Elbow.x`, they are risking a shoulder injury by letting the weight drift forward or backward.

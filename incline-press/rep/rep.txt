@@ -1,0 +1,46 @@
+# INCLINE PRESS REP LOGIC: DETAILED PHYSICS & SCORING REPORT
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE GEOMETRIC ENGINE: "THE VERTICAL PRESS"
+Because the Normalizer locked the Shoulder to (0,0) and inverted the Y-axis so UP is positive:
+* **The Trajectory:** The user is pushing the weight up into the `+Y` quadrant.
+* **The Forearm Vector:** To efficiently transfer force and protect the shoulder, the Wrist should remain vertically stacked over the Elbow (meaning `Wrist.x` should be very close to `Elbow.x`).
+
+## 2. THE REP CYCLE ("DOWN-FIRST" STATE MACHINE)
+The user starts with the weight pressed up and lowers it to their chest. 
+
+### State 1: IDLE (Lockout)
+* **Goal:** Arms fully extended upward.
+* **Trigger to ECCENTRIC:** Elbow angle drops rapidly (angular velocity < -15.0 deg/sec) and falls below 160°.
+
+### State 2: ECCENTRIC (The Drop)
+* **Goal:** Lower the bar/dumbbells to the chest under control.
+* **Peak Detection:** We track `min_elbow_angle` to ensure they hit proper depth.
+* **Trigger to CONCENTRIC:** The angular velocity crosses zero and becomes positive (the weight is being pushed back up).
+
+### State 3: CONCENTRIC (The Push)
+* **Goal:** Push the weight back to lockout.
+* **Completion:** The elbow angle opens back up > 150°, signaling a return to the IDLE state.
+
+---
+
+## 3. FAULT DETECTION MATRIX & SCORING HIERARCHY
+
+### Severe Deductions (-10 Points)
+**1. UNSTACKED_JOINTS (Dangerous Forearm Angle)**
+* **The Problem:** The user lets their wrists fall backward toward their head, or drift too far forward, placing massive shearing force on the elbow and shoulder joints.
+* **The Math:** We calculate the horizontal distance between `Wrist.x` and `Elbow.x`. If `abs(Wrist.x - Elbow.x) > 0.15` Torso Units during the press, they lose the vertical stack.
+
+**2. HIP_BRIDGE (Turning Incline into Flat Bench)**
+* **The Problem:** The user lifts their butt off the bench to cheat, shifting the load from the upper chest to the lower chest.
+* **The Math:** We track the live `current_torso_angle`. If it drops more than 15° below their `setup_torso_angle` (meaning they flattened out), we flag it.
+
+### Minor Deductions (-5 Points)
+**1. SHALLOW_REP (Half-Rep)**
+* **The Problem:** Not lowering the weight far enough to stretch the pecs.
+* **The Math:** Evaluated at the transition from ECCENTRIC to CONCENTRIC. If `min_elbow_angle > 90.0°`, they shorted the depth.
+
+**2. SHORT_LOCKOUT (Skipping the Top)**
+* **The Problem:** Starting the next rep before fully locking out.
+* **The Math:** If a new ECCENTRIC phase begins before the elbow angle recovers to at least 150°.

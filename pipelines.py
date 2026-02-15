@@ -135,6 +135,33 @@ class PipelineFactory:
                 'rep': ('rep.rep', 'RepLogic'), # Check name
                 'visualizer': ('visualizer.visualizer', 'Visualizer') # Check name
             }
+        },
+        'dumbell_row': {
+            'module': 'dumbell-rows',
+            'classes': {
+                'gatekeeper': ('gatekeeper.gatekeeper', 'OneArmRowGatekeeper'),
+                'normalizer': ('normalizer.normalizer', 'OneArmRowNormalizer'),
+                'rep': ('rep.rep', 'OneArmRowRep'),
+                'visualizer': ('visualizer.visualizer', 'Visualizer')
+            }
+        },
+        'tricep_kickback': {
+            'module': 'tricep-kickbacks',
+            'classes': {
+                'gatekeeper': ('gatekeeper.gatekeeper', 'Gatekeeper'),
+                'normalizer': ('normalizer.normalizer', 'Normalizer'),
+                'rep': ('rep.rep', 'RepLogic'),
+                'visualizer': ('visualizer.visualizer', 'Visualizer')
+            }
+        },
+        'incline_press': {
+            'module': 'incline-press',
+            'classes': {
+                'gatekeeper': ('gatekeeper.gatekeeper', 'Gatekeeper'),
+                'normalizer': ('normalizer.normalizer', 'Normalizer'),
+                'rep': ('rep.rep', 'InclinePressRep'),
+                'visualizer': ('visualizer.visualizer', 'Visualizer')
+            }
         }
     }
 
@@ -147,6 +174,7 @@ class PipelineFactory:
         if key in ['bench_press', 'flat_barbell_press']: key = 'bench'
         if key in ['row', 'seated_rows']: key = 'seated_row'
         if key in ['pushdown', 'tricep_pushdowns']: key = 'tricep_pushdown'
+        if key in ['kickback', 'tricep_kickbacks']: key = 'tricep_kickback'
         if key in ['deadlifts']: key = 'deadlift'
         if key in ['squats']: key = 'squat'
 

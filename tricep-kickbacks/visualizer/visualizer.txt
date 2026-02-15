@@ -1,0 +1,25 @@
+# CABLE TRICEP KICKBACK VISUALIZER: STRATEGY & UX
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE CHALLENGE: "VISUALIZING THE HINGE"
+The user needs to understand that their upper arm is completely frozen in space, and only their forearm is moving. The visualizer must clearly separate the anchor (elbow) from the lever (forearm).
+
+## 2. THE VISUAL SOLUTIONS
+
+### A. The "Elbow Anchor Ring"
+* **Concept:** We will reuse the pivot ring to enforce the "Floating Hinge" mechanic. 
+* **Visual:** Drawn over the active elbow.
+    * Cyan/Green = The elbow is pinned and stable (Drift < 20%).
+    * Flashing Red = "PENDULUM_SWING" fault. The ring turns red and pulses with warning text to indicate the user has dropped their elbow and broken the mechanical hinge.
+
+### B. The "Torso Metronome"
+* **Concept:** A line connecting the active Hip to the active Shoulder to monitor back heaving.
+* **Visual:**
+    * Green/White = Torso is stable at the initial bend angle.
+    * Flashing Red = "TORSO_BOB" fault. The line turns red and thickens, warning the user they are using their back to cheat.
+
+### C. The Arm Lever
+* **Concept:** Render the active arm (Shoulder -> Elbow -> Wrist) with thick lines.
+* **Visual:** * White = Good form.
+    * Yellow = "SHORT_LOCKOUT" triggered. The forearm flashes yellow to indicate incomplete extension at the back of the movement.

@@ -1,0 +1,21 @@
+# CABLE TRICEP KICKBACK GATEKEEPER: STRATEGY & LOGIC
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE VIEWPOINT & OCCLUSION
+The Cable Kickback requires a sagittal (side-profile) view of the working arm. 
+* **Blueprint Compliance:** The Gatekeeper isolates the `active_side` based on the highest visibility score, immediately discarding the occluded side of the body.
+
+## 2. THE SETUP HEURISTICS (GEOMETRY CHECK)
+To begin tracking, the user must be bent over, facing the cable stack, with their elbow rowed up to their ribcage and their arm bent, ready to kick back.
+
+* **The Hinge Check (Torso Angle):** The `Shoulder -> Hip` vector must be between 0° (parallel to the floor) and 65° (bent over). If they stand fully upright, it becomes a pushdown.
+* **The "Pinned Elbow" Check:** The upper arm must be rowed back. The Elbow's Y-coordinate must be relatively high (close to the Shoulder's Y-coordinate). If the elbow is hanging straight down, they haven't set their anchor.
+* **The Flexion Check (Starting ROM):** The user must start at the bottom of the rep. The `Shoulder -> Elbow -> Wrist` angle must be less than 110°.
+
+## 3. STABILITY & CALIBRATION
+* **Stability:** Uses the 2D variance matrix (checking X and Y for both the wrist and elbow) to ensure the user has stabilized the cable tension before starting the rep.
+* **Calibration Data (The Passport):** * *Scale Factor:* Because this is a pure arm isolation, we will set the `scale_factor` to the **Upper Arm Length** (Shoulder to Elbow distance) instead of the Torso Length.
+    * *Origin:* We capture `shoulder_origin_x` and `y`.
+    * *Anchors:* We capture `baseline_el_x` and `baseline_el_y` to strictly police the "Pendulum Swing" fault in the Rep Logic.
+    * *Setup Angle:* We capture `setup_torso_angle` to police "Torso Bobbing".

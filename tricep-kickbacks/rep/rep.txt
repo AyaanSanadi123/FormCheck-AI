@@ -1,0 +1,42 @@
+# CABLE TRICEP KICKBACK REP LOGIC: STRATEGY & SCORING
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE GEOMETRIC ENGINE: "THE FLOATING HINGE"
+Because the user is bent over, their elbow is suspended in mid-air. To isolate the triceps, the upper arm must act as a perfectly rigid, floating hinge.
+* **The Anchor:** The Elbow must remain locked at its baseline (X, Y) coordinate relative to the Shoulder `(0,0)`.
+* **The Lever:** The Forearm pushes backward into the negative X space (`-X`).
+
+## 2. THE REP CYCLE ("CONCENTRIC-FIRST" STATE MACHINE)
+The user begins the lift from a flexed position, fighting the cable tension immediately.
+
+### State 1: IDLE (Flexed/Ready)
+* **Goal:** Arm bent, waiting to extend.
+* **Trigger to CONCENTRIC:** The elbow angle increases rapidly (positive angular velocity).
+
+### State 2: CONCENTRIC (The Kickback)
+* **Goal:** Extend the forearm straight back until parallel with the upper arm.
+* **Peak Detection:** We track the maximum extension achieved (`max_elbow_angle`).
+* **Trigger to ECCENTRIC:** The angular velocity crosses zero and becomes negative (the arm begins to bend again).
+
+### State 3: ECCENTRIC (The Return)
+* **Goal:** Resist the cable tension as the arm returns to the flexed starting position.
+* **Completion:** The elbow angle drops back down (e.g., < 110°), signaling a return to the IDLE state.
+
+---
+
+## 3. FAULT DETECTION MATRIX & SCORING HIERARCHY
+
+### Severe Deductions (-10 Points)
+**1. PENDULUM_SWING (Breaking the Hinge)**
+* **The Problem:** The user drops their elbow forward on the eccentric and swings it back on the concentric to create momentum.
+* **The Math:** We calculate the Euclidean distance between the live `Elbow(x,y)` and the normalized `baseline_el(x,y)`. If this drift exceeds `0.20` Arm Units, the hinge is broken.
+
+**2. TORSO_BOB (Heaving the Back)**
+* **The Problem:** Standing up and violently dropping the torso to heave the weight back.
+* **The Math:** We compare the live `current_torso_angle` to the `setup_torso_angle`. A deviation of > 15° triggers the fault.
+
+### Minor Deductions (-5 Points)
+**1. SHORT_LOCKOUT (Missing the Squeeze)**
+* **The Problem:** Reversing the rep before the arm is fully straight.
+* **The Math:** Evaluated at the transition to ECCENTRIC. If `max_elbow_angle < 160.0°`, they shorted the peak contraction.

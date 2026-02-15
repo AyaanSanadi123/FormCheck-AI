@@ -1,0 +1,22 @@
+# INCLINE PRESS VISUALIZER: STRATEGY & UX
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE CHALLENGE: "VISUALIZING THE INVISIBLE FORCES"
+The user needs immediate feedback on two critical alignment vectors: their back angle and their forearm verticality. 
+
+## 2. THE VISUAL SOLUTIONS
+
+### A. The "Forearm Plumb Line"
+* **Concept:** A perfectly executed press requires stacked joints. We will draw a vertical "plumb line" extending straight up from the elbow to visually represent the ideal path.
+* **Visual:** * Green/White = Wrist is safely stacked near the plumb line.
+    * Flashing Red = "UNSTACKED_JOINTS" fault. The forearm line turns red to warn the user of sheer force on their joints.
+
+### B. The "Torso Metronome"
+* **Concept:** We will track the back angle using a line connecting the Hip to the Shoulder.
+* **Visual:**
+    * Green = Torso is stable on the bench.
+    * Flashing Red = "HIP_BRIDGE" fault. The torso line flashes red, indicating they are lifting their hips to cheat.
+
+### C. HUD & Standardization
+* Strictly follows the PIPELINE_BLUEPRINT.md color requirements (Green/Pass, Yellow/Minor ROM fault, Red/Severe breakdown).
