@@ -1,0 +1,18 @@
+# DIPS GATEKEEPER: STRATEGY & LOGIC
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE VIEWPOINT & OCCLUSION
+Requires a sagittal (side-profile) view. The Gatekeeper isolates the `active_side` based on joint visibility. 
+
+## 2. THE AZIMUTH ENFORCEMENT (75° to 105°)
+To prevent severe foreshortening (e.g., 45° front-diagonal views), we enforce the "Vertical Stack" rule. 
+* **The Math:** During lockout, the absolute horizontal distance between the `Shoulder.x` and `Wrist.x` must be less than 15% of the Torso Length. If the camera is at 45°, this distance will geometrically stretch and fail the check.
+
+## 3. THE SETUP HEURISTICS
+* **The Lockout:** The interior angle of `Shoulder -> Elbow -> Wrist` must be > 160°. The arms must be fully supporting the body weight.
+* **The Hand Placement:** The Wrist must be the lowest point in the chain (Y-axis decreases as it goes UP).
+
+## 4. DYNAMIC CALIBRATION (THE PASSPORT)
+* **Scale Factor (Torso Length):** Captured during the 1.5s stability hold. This naturally bakes the specific camera's perspective distortion into the mathematical unit of measurement, neutralizing the 75°-105° variance.
+* **Origin (Wrist):** Because this is a fixed-hand movement, we capture `wrist_origin_x` and `wrist_origin_y` to pass to the Normalizer as the `(0,0)` pivot point.

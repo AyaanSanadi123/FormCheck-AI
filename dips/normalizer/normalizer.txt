@@ -1,0 +1,21 @@
+# DIPS NORMALIZER: STRATEGY & MATH
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE CANONICAL POSE
+Per the pipeline blueprint, the Normalizer translates raw camera pixels into a universal geometric standard. For Dips, we utilize the Shoulder as the primary mechanical pivot.
+
+Our Canonical Pose is defined as:
+* **The Pivot (Origin):** The active **Shoulder** is locked at `(0, 0)`.
+* **The Y-Axis (Vertical):** Inverted. UP towards the ceiling is positive (`+Y`).
+* **The X-Axis (Horizontal):** Normalized so the user is always facing RIGHT (`+X`).
+* **The Scale:** All coordinates are divided by the `scale_factor` (Torso Length) captured by the Gatekeeper.
+
+## 2. THE THREAD-SAFE INJECTION
+We continue utilizing the explicit argument structure for `_normalize_point` to ensure that if the Visualizer renders before the 1.5-second Gatekeeper calibration finishes, the Normalizer's internal baselines are not corrupted.
+
+## 3. IMPACT ON KINEMATICS (THE RELATIVITY FLIP)
+Because the Shoulder is `(0,0)`:
+1. **The Wrist (The Anchor):** At lockout, the Wrist sits deep in the `-Y` space (below the shoulder). As the user drops into the dip, the Wrist's Y-coordinate will increase, moving UP toward `0`.
+2. **The Torso Angle:** The Hip sits in the `-X, -Y` quadrant (behind and below the shoulder). 
+3. **The Pendulum Swing:** If the Hip's X-coordinate swings wildly back and forth relative to the Shoulder `(0,0)`, we know they are kipping/swinging their legs to cheat the rep!
