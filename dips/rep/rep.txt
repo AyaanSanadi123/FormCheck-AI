@@ -1,0 +1,43 @@
+# DIPS REP LOGIC: DETAILED PHYSICS & SCORING REPORT
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE GEOMETRIC ENGINE: "THE RELATIVE DROP"
+Because the Normalizer locked the Shoulder to (0,0) and inverted the Y-axis (UP is +Y):
+* **The Starting Position:** The Wrist sits far below the shoulder in the `-Y` space. The Elbow is locked out.
+* **The Eccentric Drop:** As the user drops, the distance between the Shoulder and Wrist shrinks. Geometrically, the Wrist and Elbow travel UP toward the `(0,0)` origin.
+* **The Turnaround (Depth):** A true dip requires the shoulder to drop below the elbow. In our normalized space, this means the Elbow's Y-coordinate must physically cross the `0` threshold and become positive (`Elbow.y > 0`). 
+
+## 2. THE REP CYCLE ("DOWN-FIRST" STATE MACHINE)
+The user begins suspended in the air.
+
+### State 1: IDLE (Lockout)
+* **Goal:** Arms fully extended, supporting body weight.
+* **Trigger to ECCENTRIC:** The elbow angle decreases rapidly (angular velocity < -10.0 deg/sec) and drops below 160°.
+
+### State 2: ECCENTRIC (The Drop)
+* **Goal:** Lower the body until the shoulders cross the elbows.
+* **Peak Detection:** We track the minimum elbow angle (`min_elbow_angle`) and the maximum Y-height of the elbow (`max_elbow_y`).
+* **Trigger to CONCENTRIC:** The angular velocity flips from negative to positive (the body is being pushed back up).
+
+### State 3: CONCENTRIC (The Push)
+* **Goal:** Push back up to full suspension.
+* **Completion:** The elbow angle opens back up > 155°, returning to IDLE.
+
+---
+
+## 3. FAULT DETECTION MATRIX & SCORING HIERARCHY
+
+### Severe Deductions (-10 Points)
+**1. PENDULUM_SWING (Kipping the Legs)**
+* **The Problem:** The user swings their legs/hips violently forward and backward to generate momentum and cheat the concentric push.
+* **The Math:** Since Torso Length is perfectly scaled to `1.0`, we track the Hip's horizontal `X` coordinate. If the Hip drifts horizontally by more than `0.20` Torso Units from its starting position during the rep, they are swinging.
+
+### Minor Deductions (-5 Points)
+**1. SHALLOW_REP (Ego Dip)**
+* **The Problem:** Reversing the movement before hitting 90 degrees or crossing the shoulder.
+* **The Math:** Evaluated at the transition to CONCENTRIC. If the `min_elbow_angle > 90.0°` OR `max_elbow_y < 0.0` (meaning the elbow never reached the shoulder origin level), it was a half-rep.
+
+**2. SHORT_LOCKOUT (Constant Tension Exploit)**
+* **The Problem:** Skipping the hardest part of the dip by never fully straightening the arms at the top.
+* **The Math:** If a new ECCENTRIC drop begins before the elbow angle recovers to at least 155°.

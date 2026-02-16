@@ -1,0 +1,27 @@
+# DIPS VISUALIZER: STRATEGY & UX
+# Version: 1.0
+# Blueprint Standard: Compliant
+
+## 1. THE CHALLENGE: "VISUALIZING DEPTH AND SWING"
+Dips are strictly evaluated by two things: absolute depth (shoulder crossing the elbow) and absolute core stability (no swinging). The UI must instantly highlight when these two mechanics break down.
+
+## 2. THE VISUAL SOLUTIONS
+
+### A. The "Dynamic Depth Gauge"
+* **Concept:** A horizontal line extending out from the user's elbow. This is the "finish line."
+* **Visual:** * White/Blue = Dropping down.
+    * Flashing Green = The shoulder physically crosses below the line (Perfect Depth!).
+    * Flashing Yellow = "SHALLOW_REP" fault. The user reversed the rep before the shoulder crossed the line.
+
+### B. The "Pendulum Alert" (Torso Line)
+* **Concept:** We draw a thick line connecting the active Hip to the active Shoulder.
+* **Visual:**
+    * Green/White = Core is tight, body is dropping straight down.
+    * Flashing Red = "PENDULUM_SWING" fault. The torso line turns red and thickens to indicate the hips are swinging horizontally out of the vertical drop channel.
+
+### C. The Arm Lever & HUD
+* **Concept:** Render the arm (Shoulder -> Elbow -> Wrist).
+* **Visual:**
+    * White = Good form.
+    * Yellow = "SHORT_LOCKOUT" triggered, indicating the user didn't fully extend their arms at the top.
+* Standardized HUD and toast messages per the PIPELINE_BLUEPRINT.md.

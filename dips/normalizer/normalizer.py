@@ -62,7 +62,13 @@ class Normalizer:
 
         # 2. Determine Local Origin and Scale for processing
         if self.is_calibrated:
-            origin_x, origin_y, origin_z = self.shoulder_origin_x, self.shoulder_origin_y, self.shoulder_origin_z
+            # Use the CURRENT shoulder as the origin, but use CALIBRATED scale and facing
+            l_sh = landmarks[11]; r_sh = landmarks[12]
+            sh_current = l_sh if self.active_side == "LEFT" else r_sh
+            
+            origin_x = self._get_val(sh_current, 'x')
+            origin_y = self._get_val(sh_current, 'y')
+            origin_z = self._get_val(sh_current, 'z')
             facing, scale = self.facing_side, self.scale_factor
         else:
             # Fallback (Uncalibrated Visualizer) - Do NOT update self. instance variables
