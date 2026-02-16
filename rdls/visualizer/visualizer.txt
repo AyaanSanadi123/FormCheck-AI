@@ -1,0 +1,32 @@
+================================================================
+RDL VISUALIZER: HINGE & DRIFT UI
+Version: 1.0 (Sagittal Plane Feedback)
+================================================================
+
+1. SPINAL PILLAR
+----------------
+Draws a high-contrast line between the Shoulder and Hip. 
+Turns RED if lumbar flexion is detected, warning the lifter 
+to brace their core and flatten their back.
+
+2. HIP HINGE TRACKER
+--------------------
+Monitors the horizontal distance between the Hip and the 
+Ankle. Provides a visual 'Stretch' indicator when the 
+hip reaches the target depth in the -X direction.
+
+3. BAR DRIFT GAUGE
+------------------
+A horizontal 'Tether' line connects the Wrist to the 
+Shin vertical. If the gap exceeds the safety threshold, 
+the line turns RED to indicate the load is too far 
+from the center of mass.
+
+
+
+4. SQUAT AVOIDANCE
+------------------
+Highlights the Knee-to-Ankle segment. If this segment 
+tilts forward (knee driving over toes), the indicator 
+warns of 'Squat-Cheating.'
+================================================================

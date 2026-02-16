@@ -1,0 +1,30 @@
+================================================================
+VISUALIZER: HANGING STABILITY STANDARDS
+Version: 1.0 (Plumb-Line Overlay)
+================================================================
+
+1. THE PLUMB LINE
+-----------------
+A thin vertical guide is projected from the Bar (Wrist) to 
+the bottom of the frame. If the Hip drifts away from this 
+line, it indicates a lack of core control (Swinging).
+
+2. COMPRESSION TARGET
+---------------------
+A horizontal 'Ghost Line' extends from the Hip. The user's 
+Ankle must reach or pass this line to trigger the 'TOP' 
+state and ensure a full 90° range of motion.
+
+3. KINETIC CHAIN COLORING
+-------------------------
+* Torso: Remains WHITE when stable.
+* Legs: Turn GREEN when straight and engaged.
+* Legs: Turn RED if micro-flexion (Knee Bend) is detected.
+
+
+
+4. MOMENTUM WARNING
+-------------------
+The Plumb Line turns RED if the 'Swing Coefficient' is 
+violated, providing instant feedback to stop and reset.
+================================================================

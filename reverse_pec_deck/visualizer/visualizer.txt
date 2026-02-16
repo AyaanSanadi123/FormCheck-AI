@@ -1,0 +1,27 @@
+================================================================
+REVERSE PEC DECK VISUALIZER: POSTERIOR FEEDBACK STANDARDS
+Version: 1.1 (Scapular-Sweep UI)
+================================================================
+
+1. THE "T-SPINE" CROSSHAIR
+--------------------------
+Renders a vertical axis at the midpoint of the shoulders. 
+This serves as the 'Zero' anchor for measuring the symmetrical 
+expansion of the rear deltoids.
+
+2. ARM PATH MONITORING
+----------------------
+* Elbow Isometry: Arm segments turn RED if the elbow angle 
+  changes significantly from the starting position, indicating 
+  'Rowing' instead of 'Sweeping'.
+* Scapular Box: The line between shoulders turns RED if the 
+  user shrugs (vertical Y-drift).
+
+
+
+3. SCORE & STATE HUD
+--------------------
+* Green: High-quality reps with minimal shrugging.
+* Red: Active faults detected (e.g., ELBOW_PIVOT).
+* Orange: State transitions (e.g., CONCENTRIC).
+================================================================

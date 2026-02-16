@@ -1,0 +1,29 @@
+================================================================
+PLANK NORMALIZER: STRUCTURAL BEAM STANDARDS
+Version: 1.0 (Elbow-Anchored Canonical Pose)
+================================================================
+
+1. COMPONENT PURPOSE
+--------------------
+Unlike dynamic exercises, the Plank Normalizer creates a 
+mathematical "Straight Edge." By aligning the Shoulder and 
+Ankle to Y=0, any deviation of the Spine or Hip is 
+instantly quantifiable as a Y-axis error.
+
+2. COORDINATE MAPPING
+---------------------
+* Elbow: Always (0, 0) - The foundation of the pose.
+* Shoulder: Anchored near the origin on the horizontal plane.
+* Ankle: Anchored far on the X-axis at Y=0.
+* Hip: In a perfect plank, Y should be 0.0.
+  - Negative Y: Piking (Hips too high).
+  - Positive Y: Sagging (Hips too low).
+
+3. WHY THIS IS "GOLD STANDARD"
+------------------------------
+A. Tilt Immunity: Camera tilt usually makes a plank look like 
+   it is sagging or piking. This rotation cancels that out.
+B. Depth Precision: Because we scale by the user's own torso 
+   length, we can set universal thresholds for "Sag" (e.g., 
+   a 10% deviation of torso length is a fail).
+================================================================

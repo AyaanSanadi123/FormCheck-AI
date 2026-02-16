@@ -1,0 +1,35 @@
+================================================================
+REVERSE PEC DECK REP LOGIC: ISOLATION STANDARDS
+Version: 1.0 (Rear Delt Sweep Focus)
+================================================================
+
+1. PRIMARY MECHANICAL GOAL
+--------------------------
+Horizontal abduction of the humerus. The wrists should move 
+outward in an arc centered on the T-Spine (0,0).
+
+2. STATE MACHINE (Concentric-First)
+---------------------------
+* IDLE: Arms in front, holding handles.
+* CONCENTRIC: Sweeping outward. Target expansion is > 1.1 
+  normalized shoulder widths.
+* TOP: Maximum abduction reached. 
+* ECCENTRIC: Slow, controlled return to the midline.
+
+3. ISOLATION PENALTIES
+--------------------------
+* ELBOW_PIVOT (-20): Triggered if the elbow angle changes by 
+  more than 15°. Indicates the user is 'rowing' or using 
+  triceps extension rather than rear delt sweep.
+* SHOULDER_SHRUG (-15): Shoulders drifting up (Negative Y). 
+  Indicates upper trap dominance over posterior delts.
+* ASYMMETRY (-10): Left and right expansion variance > 15%.
+
+
+
+4. TECHNICAL ADVANTAGE
+----------------------
+By tracking 'Elbow Isometry' against an initial baseline 
+captured at the start of the rep, we ensure the movement 
+remains a fly and not a press/row variation.
+================================================================

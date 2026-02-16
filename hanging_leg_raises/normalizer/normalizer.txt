@@ -1,0 +1,32 @@
+================================================================
+NORMALIZER: BAR-ANCHORED CANONICAL POSE
+Version: 1.0 (Suspension-Centric Transformation)
+================================================================
+
+1. THE "SUSPENSION ANCHOR"
+--------------------------
+Traditional normalizers anchor the hip or foot. For hanging 
+exercises, the Wrist (Bar) is the only fixed point. This 
+Normalizer maps the Wrist to (0,0), making all body movement 
+relative to the point of suspension.
+
+2. COORDINATE MAPPING
+---------------------
+* Wrist: (0, 0) - The Anchor Point.
+* Shoulder: Directly below Wrist (~0, +Y).
+* Hip: Follows the Shoulder vertically in a 'Dead Hang'.
+* Legs: Move from (+Y) into (+X, +Y) space during the rep.
+
+3. SWING DETECTION GEOMETRY
+---------------------------
+By normalizing the vertical axis, the 'Swing Coefficient' is 
+calculated simply by checking the Hip's X-coordinate. 
+- Hip X > 0.2: Torso is swinging forward.
+- Hip X < -0.2: Torso is swinging backward (Kipping).
+
+4. 90-DEGREE VERIFICATION
+-------------------------
+Scaling by torso length ensures that when the Ankle reaches 
+the same Y-coordinate as the Hip, the legs are parallel 
+to the floor (90° flexion).
+================================================================

@@ -1,0 +1,28 @@
+================================================================
+PUSH-UP NORMALIZER: PLANK-ALIGNED STANDARDS
+Version: 1.1 (Spinal-Horizontal Canonical Pose)
+================================================================
+
+1. THE "HORIZONTAL PLANK" TRANSFORMATION
+-----------------------------------------
+Unlike basic normalization, this version rotates the skeletal 
+frame based on the Shoulder-Hip vector. 
+RESULT: The user's spine is always mathematically "flat" (aligned 
+to X), regardless of whether they are doing push-ups on a 
+decline, incline, or if the camera is tilted.
+
+2. COORDINATE MAPPING
+---------------------
+* Hip: Always (0, 0) - The center of the plank rotation.
+* Shoulder: Always fixed at (1.0, 0) in a perfect plank.
+* Ankle: Should stay near (-1.3, 0).
+* Floor: Represented as the Y-depth reached by the hands.
+
+3. WHY THIS IS "GOLD STANDARD"
+------------------------------
+A. Hip Sag Detection: If the Hip is (0,0) and the Shoulder is (1.0, 0), 
+   an Ankle with a negative Y-value indicates 'Piking' (hips up), 
+   while a positive Y-value indicates 'Sagging' (hips down).
+B. Depth Accuracy: Since the spine is at Y=0, the vertical travel 
+   of the hands/elbows (Y-axis) perfectly measures push-up depth.
+================================================================

@@ -1,0 +1,29 @@
+================================================================
+PLANK GATEKEEPER: ISOMETRIC STABILITY STANDARDS
+Version: 1.0 (Side-Profile Integrity)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Enforces a strict side-view to monitor the Ear-Shoulder-Hip-Ankle 
+alignment and ensures joint stacking (Elbow under Shoulder).
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Joint Stacking:
+- Monitors the X-offset between Shoulder and Elbow. A vertical 
+  humerus is required to prevent rotator cuff strain.
+
+B. The "Stability Lock":
+- Requires 60 frames (2 seconds at 30fps) of near-perfect 
+  immobility to establish the "Zero-Sag" baseline.
+
+C. Side-Profile Confirmation:
+- Filters for >90% visibility on the camera-facing side.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* active_side: LEFT or RIGHT side for tracking.
+* scale_factor: Torso length (Shoulder-to-Hip) for normalizing 
+  sag/pike measurements.
+================================================================

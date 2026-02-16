@@ -1,0 +1,23 @@
+================================================================
+PEC DECK NORMALIZER: REFINED STANDARDS
+Version: 1.1 (Coronal-Aligned Canonical Pose)
+================================================================
+
+1. THE "HORIZONTAL SHOULDER" TRANSFORMATION
+-----------------------------------------
+This version rotates the skeletal frame so that the vector 
+between Landmark 11 and 12 is perfectly parallel to the X-axis.
+
+2. IMPACT ON ANALYSIS
+---------------------
+* Pivot Lock: The Sternum is the absolute (0,0).
+* Symmetry: Left/Right adduction is measured from a level center.
+* Scale: Normalized to the user's Bi-acromial width.
+
+3. COORDINATE MAPPING
+---------------------
+* Sternum: (0, 0)
+* Left Shoulder: (-0.5, 0)
+* Right Shoulder: (0.5, 0)
+* Wrists (Peak): Converge toward (0, y) at the end of Concentric.
+================================================================

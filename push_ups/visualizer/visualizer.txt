@@ -1,0 +1,32 @@
+================================================================
+PUSH-UP VISUALIZER: PLANK PERFORMANCE STANDARDS
+Version: 1.1 (Biomechanical Feedback UI)
+================================================================
+
+1. THE "PLANK RAIL" GUIDE
+-------------------------
+A grey guide-line connects the Shoulder to the Ankle. 
+The active skeleton (Shoulder-Hip-Ankle) turns RED if the Hip 
+landmark deviates significantly from this line, indicating 
+a SAG or PIKE.
+
+2. DEPTH MONITORING
+-------------------
+A small horizontal plane is rendered under the Wrist. 
+The distance between the Shoulder (Torso line) and this 
+plane represents the "Push-Up Depth."
+
+
+
+3. FAULT HIGHLIGHTING
+---------------------
+* Elbow Flare: The upper arm segment (Shoulder-Elbow) turns 
+  RED if the humerus-to-torso angle is > 60°.
+* Head Drop: The neck segment (Ear-Shoulder) turns RED if 
+  the head drops below the plank baseline.
+
+4. DYNAMIC HUD
+--------------
+Displays Reps, real-time quality Score, and current State 
+(e.g., ECCENTRIC vs CONCENTRIC).
+================================================================

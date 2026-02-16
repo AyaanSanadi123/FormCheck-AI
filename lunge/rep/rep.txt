@@ -1,0 +1,36 @@
+================================================================
+LUNGE REP LOGIC: UNILATERAL PERFORMANCE STANDARDS
+Version: 1.1 (Sagittal Plane Integrity)
+================================================================
+
+1. PRIMARY MECHANICAL GOAL
+--------------------------
+Achieve 90/90 knee flexion while maintaining a vertical torso 
+and keeping the front knee stacked over the front ankle.
+
+2. STATE MACHINE (Down-First)
+---------------------------
+* IDLE: Standing upright, legs staggered.
+* ECCENTRIC: Controlled descent. Back knee must reach Y > -0.15 
+  (relative to floor Y=0).
+* BOTTOM: Transition point where downward velocity stops.
+* CONCENTRIC: Explosive drive through the front heel.
+* COMPLETE: Return to initial standing height.
+
+3. KINETIC CHAIN PENALTIES
+--------------------------
+* KNEE_SHEAR (-20): Front knee travels too far forward (X > 0.25). 
+  Places excessive load on the patellar tendon.
+* HIP_DRIFT (-15): Horizontal swaying. Indicates lack of 
+  core and gluteal stability.
+* TORSO_LEAN (-10): Excessive forward lean. Shifts load from 
+  the glutes to the lower back.
+* KNEE_WOBBLE (-15): Lateral instability (Z-axis deviation).
+
+
+
+4. TECHNICAL ADVANTAGE
+----------------------
+Using the Front Ankle as (0,0) makes "Knee Over Ankle" 
+monitoring a zero-cost comparison of the knee's X-coordinate.
+================================================================

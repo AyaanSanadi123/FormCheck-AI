@@ -1,0 +1,36 @@
+================================================================
+REVERSE PEC DECK NORMALIZER: POSTERIOR STANDARDS
+Version: 1.0 (T-Spine Canonical Pose)
+================================================================
+
+1. COMPONENT PURPOSE
+------------------------------
+Standardizes the frame so the mid-back (T-Spine) is at (0,0). 
+This allows the Rep Logic to track the 'Sweep' of the rear 
+deltoids as a purely horizontal (X-axis) expansion.
+
+2. STANDARDIZATION RULES
+----------------------------------
+A. Origin (Translation):
+- Midpoint of landmarks 11 and 12 is set to (0,0). 
+- RESULT: Hand positions are now relative to the spinal center.
+
+B. Rotation (Vertical Alignment):
+- Rotates the entire coordinate system so the vector from 
+  the Mid-Shoulder to Mid-Hip is parallel to the Y-axis.
+- EFFECT: Neutralizes camera tilt and user leaning.
+
+C. Scale (Normalization):
+- All spatial data is divided by 'scale_factor' (Shoulder Width).
+- RESULT: A wrist 'X' value of 1.2 means the hand has traveled 
+  1.2 shoulder-widths away from the spine.
+
+
+
+3. IMPACT ON REP LOGIC
+-------------------------------
+By fixing the spine at X=0, we can detect 'Asymmetrical Pulling' 
+if the absolute X-value of the Left Wrist differs from the 
+Right Wrist. We can also detect 'Shrugging' by monitoring the 
+Y-drift of the shoulders away from the 0.0 baseline.
+================================================================

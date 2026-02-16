@@ -1,0 +1,33 @@
+================================================================
+PULL-UP REP LOGIC: VERTICAL ASCENT STANDARDS
+Version: 1.1 (Strict Isolation Focus)
+================================================================
+
+1. PRIMARY METRICS
+------------------
+* Chin Clearance: Measures the Y-coordinate of the face relative 
+  to the Bar Baseline (Y=0).
+* Scapular Initiation: Monitors the vertical gap between the 
+  Ears and Shoulders at the start of the pull.
+* Core Stability: Monitors the X-axis variance of the hips to 
+  penalize momentum generation (Kipping).
+
+2. STATE MACHINE (Up-First)
+---------------------------
+1. IDLE: Full dead hang at the bottom.
+2. CONCENTRIC: The upward pull phase.
+3. TOP: Chin successfully crosses the bar line.
+4. ECCENTRIC: Controlled lowering to a dead hang.
+5. COMPLETE: Resets once full extension is regained.
+
+3. FAULT DETECTION
+------------------
+* SHRUGGED_PULL (-10): Triggered if the user pulls with 
+  shoulders near ears. Indicates lack of scapular engagement.
+* KIP_SWING (-20): High penalty for using legs/momentum to 
+  clear the bar.
+* SHORT_ROM (-15): If the user fails to return to a dead hang 
+  (elbows > 1.0 torso units from bar).
+
+
+================================================================

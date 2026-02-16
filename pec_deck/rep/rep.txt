@@ -1,0 +1,36 @@
+================================================================
+PEC DECK REP LOGIC: BILATERAL STANDARDS
+Version: 1.1 (Symmetry & Adduction Focus)
+================================================================
+
+1. PRIMARY METRIC
+-----------------
+* Inter-Wrist Distance: Measures the horizontal adduction convergence. 
+  A valid rep requires the wrists to meet at a distance < 35% of 
+  the shoulder width.
+* Vertical Shoulder Stability: Monitors 'Shoulder Hiking' by 
+  tracking Y-axis drift from the coronal-aligned baseline.
+
+2. STATE MACHINE (Concentric-First)
+-----------------------------------
+1. IDLE: Arms open, ready to initiate.
+2. CONCENTRIC: Hands/Elbows moving toward the midline.
+3. TOP: Peak contraction reached at minimum distance.
+4. ECCENTRIC: Controlled opening to the start position.
+5. COMPLETE: Resets the cycle for the next rep.
+
+3. FAULT DETECTION
+------------------
+* SHOULDER_HIKE (-15): Triggered if shoulders elevate during the 
+  squeeze. Indicates traps are compensating for fatigued pecs.
+* PARTIAL_ROM (-20): Triggered if the eccentric phase is cut short, 
+  failing to reach the full stretch baseline (>90% shoulder width).
+
+
+
+4. TECHNICAL NOTES
+------------------
+This logic benefits from the Coronal-Aligned Normalizer; the 
+distance is calculated as a pure X-axis difference, making it 
+immune to slight torso leans or tilts.
+================================================================

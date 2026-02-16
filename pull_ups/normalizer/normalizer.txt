@@ -1,0 +1,24 @@
+================================================================
+PULL-UP NORMALIZER: REFINED STANDARDS
+Version: 1.1 (Pendulum-Compensated Canonical Pose)
+================================================================
+
+1. THE "TRUE VERTICAL" TRANSFORMATION
+-----------------------------------------
+This version uses the Hip-to-Bar X-offset to calculate the 
+hypotenuse of the swing. It corrects the Y-coordinate so 
+the 'Pull' is measured only as the distance to the bar.
+
+2. IMPACT ON ANALYSIS
+---------------------
+* Pivot Lock: The Bar is the absolute (0,0).
+* Kipling Detection: Swing is separated from climb, allowing 
+  the RepLogic to penalize 'Kicking' without losing track 
+  of the rep.
+
+3. COORDINATE MAPPING
+---------------------
+* Bar Midpoint: (0, 0)
+* Chin (Top): Must reach < 0.0 (Negative Y)
+* Elbows (Hang): Reach max Positive Y at the bottom.
+================================================================

@@ -1,0 +1,27 @@
+================================================================
+LUNGE NORMALIZER: FLOOR-CENTRIC STANDARDS
+Version: 1.1 (Unilateral-Horizontal Canonical Pose)
+================================================================
+
+1. THE "STABLE FLOOR" TRANSFORMATION
+-----------------------------------------
+This module uses the Front Ankle and Toe as a level-guide. 
+Even if the camera is tilted, the normalizer forces the 
+floor to be the Y=0 plane.
+
+2. COORDINATE MAPPING
+---------------------
+* Front Ankle: (0, 0) - The primary pivot point.
+* Front Toe: (+X, 0) - Defines the floor direction.
+* Hips: Move along a vertical arc (-Y space).
+* Back Knee: Approaches (X_dist, 0) during the bottom of the rep.
+
+3. BIOMECHANICAL INSIGHTS
+-------------------------
+* Vertical Shin: If the Front Knee's X-coordinate is 0, 
+  the shin is perfectly vertical.
+* Hip Drift: Any X-axis deviation of the Hip relative to its 
+  starting X-position indicates horizontal instability.
+* 90/90 Check: Scaling by torso length allows us to verify 
+  that knee flexion matches the user's limb proportions.
+================================================================

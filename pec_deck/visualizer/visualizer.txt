@@ -1,0 +1,27 @@
+================================================================
+PEC DECK VISUALIZER: RENDERING STANDARDS
+Version: 1.1 (Bilateral Adduction UI)
+================================================================
+
+1. VISUAL FEEDBACK
+------------------
+* Midline Guide: Renders a vertical axis through the sternum to 
+  help users visualize the "meeting point" for their wrists.
+* Shoulder Stability: Joint pivots at landmarks 11/12 turn RED if 
+  shrugging (Shoulder Hike) is detected.
+
+2. HUD & TOASTS
+---------------
+* Displays Reps, Score, and current State (e.g., CONCENTRIC). 
+* Feedback messages like "KEEP SHOULDERS DOWN" or "PEAK SQUEEZE" 
+  are toasted at the bottom center.
+
+
+
+3. COLOR STANDARDS
+------------------
+Adheres to PIPELINE_BLUEPRINT.md: 
+- Green: Good form. 
+- Red: Active faults. 
+- Orange: Transition states or warnings.
+================================================================

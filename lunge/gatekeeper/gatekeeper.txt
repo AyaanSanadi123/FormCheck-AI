@@ -1,0 +1,30 @@
+================================================================
+LUNGE GATEKEEPER: UNILATERAL STABILITY STANDARDS
+Version: 1.0 (Side-Profile Calibration)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Establishes the 'Lead Leg' for unilateral tracking and captures 
+the floor baseline to measure back-knee depth accurately.
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Side-Profile Confirmation:
+- Requires high visibility (>85%) of the shoulder-to-toe 
+  chain on the active side.
+
+B. Stability Window:
+- 45 frames of static upright posture to define the 
+  'Vertical Axis' of the starting position.
+
+C. Floor Indexing:
+- Sets Y=0 at the front ankle to calculate the back knee's 
+  distance from the ground during the eccentric phase.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* active_side: Determines which leg is the 'Front' leg.
+* scale_factor: Torso length used for depth normalization.
+* floor_y_baseline: Absolute Y-coordinate of the floor.
+================================================================

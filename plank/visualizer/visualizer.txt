@@ -1,0 +1,31 @@
+================================================================
+PLANK VISUALIZER: ISOMETRIC STABILITY STANDARDS
+Version: 1.0 (Structural Integrity UI)
+================================================================
+
+1. THE "REFERENCE BEAM"
+-----------------------
+A grey guide line is drawn between the Shoulder and Ankle. 
+This represents the 'Perfect Neutral' axis. The user's 
+actual spinal lines (Sh-Hip-Ank) are projected against this.
+
+2. SAG/PIKE DETECTION
+---------------------
+The Hip-to-Spine segments turn RED if the Hip Y-coordinate 
+deviates more than 15% from the Reference Beam. 
+* Above the line: PIKING.
+* Below the line: SAGGING.
+
+3. JOINT STACKING RAIL
+----------------------
+A vertical indicator connects the Shoulder to the Elbow. 
+If this line tilts significantly, it turns ORANGE, signaling 
+poor weight distribution on the joints.
+
+
+
+4. STABILITY HUD
+----------------
+Replaces the 'Rep Counter' with a 'Time Counter'. Seconds 
+only accumulate when the structural lines are GREEN.
+================================================================

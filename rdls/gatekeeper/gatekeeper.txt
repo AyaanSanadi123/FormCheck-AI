@@ -1,0 +1,33 @@
+================================================================
+RDL GATEKEEPER: POSTERIOR CHAIN STANDARDS
+Version: 1.0 (Side-Profile Integrity)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Ensures the camera is placed at a true 90-degree angle. This 
+is mandatory to track the horizontal displacement of the hip 
+relative to the ankle (the 'Hinge').
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Joint Stacking Baseline:
+- Confirms the lifter starts in a neutral standing position 
+  with the Hip-Shoulder-Ankle vertically aligned.
+
+B. Knee Unlock Calibration:
+- Measures the 'Starting Knee Angle.' In an RDL, the knees 
+  should be 'soft' but not bent like a squat. This baseline 
+  prevents 'Squat-Cheating' during the rep.
+
+C. Lead-Side Visibility:
+- Requires 90% visibility for the shoulder, hip, and ankle 
+  to ensure the skeletal model is accurate for depth tracking.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* active_side: LEFT or RIGHT for tracking.
+* scale_factor: Full leg length (Hip to Ankle) used to normalize 
+  horizontal hip travel.
+* base_knee_angle: The reference angle for 'soft knees.'
+================================================================

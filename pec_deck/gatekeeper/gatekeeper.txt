@@ -1,0 +1,33 @@
+================================================================
+PEC DECK GATEKEEPER: FRONTAL CALIBRATION STANDARDS
+Version: 1.0 (Bilateral Monitoring)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Ensures a strict frontal orientation. Unlike side-profile 
+exercises, the Pec Deck requires symmetrical tracking of both 
+humerus bones as they adduct toward the sternum.
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Bilateral Visibility:
+- Monitors BOTH shoulders, elbows, and wrists. If the user sits 
+  at an angle that obscures one side, calibration fails.
+
+B. Z-Plane Symmetry:
+- Measures the Z-depth difference between landmarks 11 and 12. 
+  Prevents analysis if the user is rotated > 15 degrees.
+
+C. Scale Factor:
+- Uses Bi-acromial width (shoulder-to-shoulder distance). This 
+  is the most reliable metric for normalizing chest exercises in 
+  a frontal plane.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* active_side: Set to "BOTH" to signal bilateral rep logic.
+* scale_factor: Average shoulder width.
+* shoulder_y_baseline: Used to detect "Shoulder Hiking" (shrugging) 
+  during the concentric phase.
+================================================================

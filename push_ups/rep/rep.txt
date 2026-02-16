@@ -1,0 +1,36 @@
+================================================================
+PUSH-UP REP LOGIC: PLANK STANDARDS
+Version: 1.1 (Spinal Integrity Focus)
+================================================================
+
+1. PRIMARY MECHANICAL GOAL
+--------------------------
+To move the chest (Shoulder-Hip line) toward the fixed point of 
+the hands while maintaining a 180° Shoulder-Hip-Ankle alignment.
+
+2. STATE MACHINE (Down-First)
+---------------------------
+* IDLE: High plank, arms locked.
+* ECCENTRIC: Controlled descent. Depth is valid when hand-to-torso 
+  distance is < 25% of torso length.
+* BOTTOM: Transition zone. 
+* CONCENTRIC: Explosive push back to lockout (> 70% torso length).
+
+3. KINETIC CHAIN PENALTIES
+--------------------------
+* HIP_SAG (-15): Hips dropping below the Shoulder-Ankle line. 
+  Indicates core failure.
+* HIP_PIKE (-10): Hips pushing upward to shift load to shoulders.
+* ELBOW_FLARE (-10): Elbows exceeding 60° relative to the torso. 
+  Triggers warning for shoulder health.
+* HEAD_DROP (-5): "Nodding" or reaching with the face instead 
+  of the chest.
+
+
+
+4. TECHNICAL ADVANTAGE
+----------------------
+By using the Plank-Aligned Normalizer, "Hip Sag" is no longer 
+a complex calculation; it is a simple Y-coordinate drift of 
+the ankle landmark relative to the (0,0) hip origin.
+================================================================

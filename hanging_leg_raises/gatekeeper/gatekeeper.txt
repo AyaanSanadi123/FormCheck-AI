@@ -1,0 +1,31 @@
+================================================================
+HANGING LEG RAISE GATEKEEPER: SUSPENSION STANDARDS
+Version: 1.0 (Active Hang Calibration)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Establishes the 'Active Hang' baseline. Monitors the vertical 
+alignment of the wrist and hip to ensure the user isn't 
+starting with momentum.
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Scapular Engagement:
+- Measures the Ear-to-Shoulder Y-distance. If the gap is too 
+  small, the user is 'passive hanging,' which risks shoulder 
+  impingement.
+
+B. Plumb Line Alignment:
+- Validates that the Hip is directly below the Wrist (the Bar). 
+  Calibration will not complete if the user is swinging.
+
+C. Side-Profile Focus:
+- Critical for measuring the Torso-Femur angle (the 90° goal).
+
+3. CALIBRATION OUTPUTS
+----------------------
+* bar_origin: The (X, Y) coordinates of the grip, used as the 
+  fixed anchor for Normalization.
+* scale_factor: Torso length used to normalize 'Swing Drift.'
+================================================================

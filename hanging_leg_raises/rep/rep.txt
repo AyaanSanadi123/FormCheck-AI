@@ -1,0 +1,28 @@
+================================================================
+REPLOGIC: HANGING LEG RAISE STANDARDS
+Version: 1.0 (Strict Momentum Control)
+================================================================
+
+1. THE "DEAD STOP" PROTOCOL
+---------------------------
+Unlike other movements, a Hanging Leg Raise rep is only valid 
+if it starts from zero momentum. The 'IDLE' state requires 
+the ankle to be vertically aligned with the bar (X ≈ 0).
+
+2. BIOMECHANICAL PENALTIES
+--------------------------
+* SWINGING (-20): Triggered if the Hip drifts horizontally. 
+  Indicates 'Kipping' or using lats to swing into the rep.
+* KNEE_BEND (-15): Triggered if knees flex > 20°. Cheating 
+  the lever arm reduces abdominal load.
+* FAST_DROP (-10): Rapid eccentric phase. Lack of core 
+  tension on the way down.
+
+3. TARGET COMPRESSION
+---------------------
+A rep only enters the 'TOP' state if the Torso-to-Femur angle 
+reaches ≤ 100°. This ensures the legs are at least parallel 
+to the floor.
+
+
+================================================================

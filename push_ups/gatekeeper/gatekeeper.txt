@@ -1,0 +1,31 @@
+================================================================
+PUSH-UP GATEKEEPER: SIDE-PROFILE STANDARDS
+Version: 1.0 (Plank-Stability Calibration)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Ensures a strict side-profile orientation to monitor spinal 
+alignment (Shoulder-Hip-Ankle) and vertical depth.
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Visibility:
+- Monitors the 'active' side (left or right). All 5 major 
+  pivots must be > 85% visible.
+
+B. Aspect Ratio Check:
+- Verifies that the horizontal distance between shoulders is 
+  small relative to torso length, confirming a side profile.
+
+C. Plank Alignment:
+- Validates the user is in a 'High Plank' by checking if the 
+  Shoulder-Hip-Ankle angle is > 160 degrees.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* active_side: The side facing the camera (LEFT/RIGHT).
+* scale_factor: Biomechanical length of the torso (Sh-Hip).
+* floor_y_baseline: Estimates the floor plane based on the 
+  initial wrist position in the high plank.
+================================================================

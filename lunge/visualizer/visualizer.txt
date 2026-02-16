@@ -1,0 +1,29 @@
+================================================================
+LUNGE VISUALIZER: SAGITTAL STABILITY STANDARDS
+Version: 1.0 (Unilateral Feedback UI)
+================================================================
+
+1. VERTICAL SHIN RAIL
+---------------------
+A fixed guide line projects upward from the Front Ankle. 
+The front leg (Ankle-Knee) turns RED if the knee drifts past 
+this rail, indicating excessive shear stress.
+
+2. TORSO VECTOR
+---------------
+Highlights the alignment between the Hip and Shoulder. 
+Turns RED if the angle exceeds 25° from vertical, indicating 
+a collapsed chest or core failure.
+
+3. DEPTH INDICATOR
+------------------
+Monitors the trailing knee. The joint marker turns GREEN 
+when the knee enters the "Depth Zone" (near the floor plane).
+
+
+
+4. STABILITY OVERLAYS
+---------------------
+Horizontal arrows appear at the Hip level if 'Hip Drift' 
+is detected, signaling a lack of sagittal control.
+================================================================

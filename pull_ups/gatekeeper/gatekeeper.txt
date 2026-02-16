@@ -1,0 +1,30 @@
+================================================================
+PULL-UP GATEKEEPER: VERTICAL CALIBRATION STANDARDS
+Version: 1.0 (Suspension Monitoring)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Verifies the 'Dead Hang' starting position and calibrates the 
+horizontal plane of the bar based on wrist positioning.
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Suspension Detection:
+- Confirms wrists (15, 16) are the highest points in the 
+  kinetic chain.
+
+B. Stability Window:
+- Requires 45 frames of minimal movement to establish a 
+  clean Torso Length scale factor.
+
+C. Active Side:
+- Set to 'BOTH' as pull-ups require bilateral symmetry 
+  analysis.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* scale_factor: Average Torso Length (Shoulder to Hip).
+* bar_y_baseline: The Y-coordinate of the bar, used to 
+  determine rep completion (Chin-over-bar).
+================================================================

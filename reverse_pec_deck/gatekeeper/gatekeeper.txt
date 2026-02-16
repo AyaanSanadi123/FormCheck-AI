@@ -1,0 +1,30 @@
+================================================================
+REVERSE PEC DECK GATEKEEPER: POSTERIOR STANDARDS
+Version: 1.0 (Spinal-Vertical Calibration)
+================================================================
+
+1. CORE OBJECTIVE
+-----------------
+Verifies the user is seated upright with a visible upper back 
+and arms, enabling the tracking of horizontal abduction.
+
+2. VALIDATION REQUIREMENTS (check)
+----------------------------------
+A. Visibility:
+- Must see the full 'T-Shape' of the body: Shoulders to Hips 
+  and Shoulders to Wrists.
+
+B. Spinal Verticality:
+- The midline of the shoulders must align vertically with the 
+  midline of the hips (X-axis difference < 0.1).
+
+C. Shoulder Level:
+- Shoulders must be horizontal to ensure the machine pads are 
+  set correctly and the user isn't leaning.
+
+3. CALIBRATION OUTPUTS
+----------------------
+* scale_factor: Bi-acromial width (Shoulder Width). Used to 
+  normalize arm travel distance.
+* active_side: Set to 'BOTH' for bilateral symmetry tracking.
+================================================================

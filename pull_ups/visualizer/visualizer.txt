@@ -1,0 +1,28 @@
+================================================================
+PULL-UP VISUALIZER: RENDERING STANDARDS
+Version: 1.1 (Vertical Performance UI)
+================================================================
+
+1. THE "BAR PLANE" OVERLAY
+--------------------------
+Renders a white horizontal line representing the bar. 
+The Chin indicator (at the mouth) turns from WHITE to GREEN 
+once it crosses above this line, signaling a successful rep.
+
+2. STABILITY MONITORING
+-----------------------
+* Kip Zone: Gray vertical boundaries illustrate the 'Safe Zone' 
+  for horizontal movement. If the hips/torso drift outside 
+  these lines, the torso skeleton turns RED.
+* Scapular Depression: The neck lines turn RED if the user 
+  pulls with 'shrugged' shoulders (Ear-Shoulder distance < THRESH).
+
+
+
+3. FEEDBACK SYSTEM
+------------------
+* Toasts provide immediate correction: "STOP SWINGING", 
+  "CHIN OVER BAR", or "DEPRESS SHOULDERS".
+* The HUD keeps track of the 'State' (e.g., CONCENTRIC vs 
+  TOP) to help users understand their current rep phase.
+================================================================

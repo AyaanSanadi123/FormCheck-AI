@@ -1,0 +1,29 @@
+================================================================
+REPLOGIC: ROMANIAN DEADLIFT (RDL) STANDARDS
+Version: 1.0 (Posterior Chain Integrity)
+================================================================
+
+1. THE "HINGE-FIRST" PROTOCOL
+-----------------------------
+Unlike a standard deadlift, the RDL rep begins with horizontal 
+hip displacement. The 'IDLE' to 'ECCENTRIC' transition is 
+triggered solely by the Hip X-coordinate.
+
+2. CRITICAL FAULT DETECTION
+---------------------------
+* SQUAT_FAULT (-15): Detected if the knee angle deviates 
+  from the 'Soft Knee' baseline calibrated in the Gatekeeper. 
+  Indicates the user is offloading the hamstrings.
+* LUMBAR_ROUND (-20): Triggered if the Shoulder-Hip-Knee angle 
+  breaks linearity. This is a high-priority safety stop.
+* BAR_DRIFT (-10): Measures the horizontal gap between the 
+  Wrist and the Ankle. A drifting bar increases spinal shear.
+
+3. SUCCESS CRITERIA
+-------------------
+A 'Clean Rep' requires a Hip X-displacement of at least 20% 
+of the leg length. This ensures the lifter reaches the 
+'Stretch' state where hamstring recruitment is highest.
+
+
+================================================================

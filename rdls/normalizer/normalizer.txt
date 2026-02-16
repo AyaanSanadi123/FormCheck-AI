@@ -1,0 +1,29 @@
+================================================================
+NORMALIZER: ANKLE-ANCHORED HINGE SPACE
+Version: 1.0 (Sagittal Plane Transformation)
+================================================================
+
+1. COMPONENT PURPOSE
+--------------------
+Standardizes the lifter's position so that the 'Hinge' is 
+measured purely as horizontal (X) travel. This removes 
+the bias of lifters standing at different depths or 
+angles relative to the lens.
+
+2. COORDINATE MAPPING
+---------------------
+* Ankle: (0, 0) - The fixed pivot of the lower body.
+* Floor: Aligned to the X-axis (Y=0).
+* Neutral Stand: Hip X ≈ 0, Shoulder X ≈ 0.
+* The Hinge: Hip X moves in the negative direction (-X).
+* Bar Path: Wrist X relative to Ankle X.
+
+3. WHY THIS IS "GOLD STANDARD"
+------------------------------
+A. Tilt Cancellation: Even if the camera is held at an angle, 
+   the rotation based on the foot-to-floor contact ensures 
+   the spine's 'verticality' is measured accurately.
+B. Dimensionless Units: By scaling by leg length, a 'good 
+   hinge' is defined as Hip X < -0.15 (15% of leg length), 
+   making the logic universal for all body types.
+================================================================

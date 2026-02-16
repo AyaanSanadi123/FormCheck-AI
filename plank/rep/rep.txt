@@ -1,0 +1,34 @@
+================================================================
+PLANK REP LOGIC: ISOMETRIC INTEGRITY STANDARDS
+Version: 1.0 (Stability Timer System)
+================================================================
+
+1. PRIMARY MECHANICAL GOAL
+--------------------------
+To maintain a rigid, linear bridge between the shoulders and 
+ankles, resisting gravity's pull on the lumbar spine.
+
+2. STATE MACHINE (Isometric Timer)
+---------------------------
+* IDLE: Baseline search.
+* HOLDING: Accumulates 'Reps' (1 rep = 1 second of perfect form).
+* FAILED: Timer pauses when hip deviation exceeds 15% of torso length.
+
+3. INTEGRITY PENALTIES
+--------------------------
+* HIP_SAG (-10): Hips drop below the Shoulder-Ankle line. 
+  Indicates core failure and potential lumbar strain.
+* HIP_PIKE (-10): Hips rise above the line. Indicates the user 
+  is shifting weight to the shoulders to avoid core work.
+* NECK_DIVE (-5): Head dropping or looking up. 
+* STABILITY_LOSS (-15): Detected via high-frequency jitter in 
+  the Hip Y-axis. Indicates neural fatigue.
+
+
+
+4. TECHNICAL ADVANTAGE
+----------------------
+By defining 'Reps' as seconds of quality, we gamify the 
+isometric hold while ensuring the user doesn't 'cheat the clock' 
+with bad form.
+================================================================
