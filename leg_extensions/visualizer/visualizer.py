@@ -23,10 +23,11 @@ class Visualizer:
         h, w, _ = frame.shape
         raw_coords = packet.get("raw_coords")
         faults = packet.get("faults", [])
+        active_side = packet.get("active_side", "RIGHT") # Default to RIGHT if not found
         
         # 1. Draw Skeleton (Using Raw Coordinates)
         if raw_coords:
-            self._draw_skeleton(frame, raw_coords, faults, h, w)
+            self._draw_skeleton(frame, raw_coords, faults, h, w, active_side)
 
         # 2. Draw HUD (Reps, Score, State)
         self._draw_hud(frame, packet, w)
@@ -36,14 +37,17 @@ class Visualizer:
 
         return frame
 
-    def _draw_skeleton(self, frame, coords, faults, h, w):
+    def _draw_skeleton(self, frame, coords, faults, h, w, active_side):
         """Draws the primary mechanical levers for the leg extension."""
-        # Joints: Hip(24), Knee(26), Ankle(28)
-        # Assuming Right Side as primary for this example
+        # Joints: Hip(24/23), Knee(26/25), Ankle(28/27)
+        hip_idx = 24 if active_side == "RIGHT" else 23
+        knee_idx = 26 if active_side == "RIGHT" else 25
+        ankle_idx = 28 if active_side == "RIGHT" else 27
+
         try:
-            hip = (int(coords[24].x * w), int(coords[24].y * h))
-            knee = (int(coords[26].x * w), int(coords[26].y * h))
-            ankle = (int(coords[28].x * w), int(coords[28].y * h))
+            hip = (int(coords[hip_idx].x * w), int(coords[hip_idx].y * h))
+            knee = (int(coords[knee_idx].x * w), int(coords[knee_idx].y * h))
+            ankle = (int(coords[ankle_idx].x * w), int(coords[ankle_idx].y * h))
 
             # Color logic for faults
             knee_color = self.COLOR_BAD if "BUTT_LIFT" in faults else self.COLOR_GOOD

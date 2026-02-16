@@ -28,8 +28,9 @@ class BicepCurlRep:
         # Tracking
         self.min_angle_achieved = 180 # Peak contraction is the minimum angle
         self.prev_angle = 180
+        self.prev_time = None # For dt calculation
 
-    def process(self, landmarks):
+    def process(self, landmarks, raw_landmarks=None, timestamp=None):
         if not landmarks: return None
 
         # 1. FETCH JOINTS (Normalized Profile)
@@ -40,6 +41,32 @@ class BicepCurlRep:
         # Angle between Shoulder-Elbow and Elbow-Wrist
         angle = self._calculate_joint_angle(sh, elb, wrist)
 
+        # Calculate dt and angle_velocity
+        if self.prev_time is None:
+            self.prev_time = timestamp
+            self.prev_angle = angle
+            # Return initial packet if no previous frame to compare
+            return {
+                "reps": self.rep_count,
+                "state": self.state,
+                "score": self.current_score,
+                "feedback": self.feedback_buffer,
+                "faults": list(set([f['code'] for f in self.faults])),
+                "coords": landmarks,
+                "raw_coords": raw_landmarks,
+                "metrics": {
+                    "angle": int(angle),
+                    "angle_velocity": 0 # No velocity on first frame
+                }
+            }
+
+        dt = timestamp - self.prev_time
+        angle_change = angle - self.prev_angle
+        angle_velocity = angle_change / dt if dt > 0 else 0
+
+        self.prev_time = timestamp
+        self.prev_angle = angle
+
         # 3. CALCULATE BACK LEAN
         # Angle of spine relative to vertical (which the normalizer centered at 0)
         spine_dx = sh.x - hip.x
@@ -49,7 +76,7 @@ class BicepCurlRep:
         # 4. ELBOW DRIFT (The "Swing" Detector)
         # Difference between current elbow X and the calibrated anchor
         drift = abs(elb.x - self.elbow_anchor_x) / self.humerus_l
-
+        
         # --- STATE MACHINE ---
         
         if self.state == "IDLE":
@@ -74,13 +101,13 @@ class BicepCurlRep:
             
             # TRANSITION 2: Early Descent (Directional Switch)
             # If the user starts lowering before reaching THRESH_FLEXION_PEAK
-            elif (angle - self.prev_angle) > self.THRESH_DIRECTION_CHANGE:
+            elif angle_velocity > self.THRESH_DIRECTION_CHANGE: # Now uses degrees/second
                 self._add_fault("PARTIAL_ROM", 15, "Squeeze Higher at Top")
                 self.state = "EXTENDING"
 
         elif self.state == "EXTENDING":
             # Check for uncontrolled drop speed
-            if self._is_dropping(angle): # Check for uncontrolled drop
+            if self._is_dropping(angle_velocity): # Pass angle_velocity
                  self._add_fault("CONTROL", 10, "Lower Slowly")
 
             # Finalize Rep
@@ -88,15 +115,19 @@ class BicepCurlRep:
                 self._finalize_rep_success()
                 self.state = "IDLE"
         
-        self.prev_angle = angle
+        #self.prev_angle = angle # This is now updated at the beginning of process
         return {
             "state": self.state,
             "reps": self.rep_count,
             "score": self.current_score,
             "feedback": self.feedback_buffer,
-            "angle": int(angle),
+            "metrics": {
+                "angle": int(angle),
+                "angle_velocity": angle_velocity
+            },
             "faults": list(set([f['code'] for f in self.faults])),
-            "coords": landmarks
+            "coords": landmarks,
+            "raw_coords": raw_landmarks
         }
 
     def _calculate_joint_angle(self, p1, p2, p3):
@@ -110,8 +141,8 @@ class BicepCurlRep:
         dot_prod = np.dot(unit_v1, unit_v2)
         return np.degrees(np.arccos(np.clip(dot_prod, -1.0, 1.0)))
 
-    def _is_dropping(self, current_angle):
-        return (current_angle - self.prev_angle) > self.THRESH_DROP_SPEED
+    def _is_dropping(self, angle_velocity):
+        return angle_velocity > self.THRESH_DROP_SPEED
 
     def _reset_rep(self, current_angle):
         self.current_score = self.SCORE_MAX

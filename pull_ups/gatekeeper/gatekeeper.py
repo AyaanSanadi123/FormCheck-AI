@@ -113,5 +113,6 @@ class PullUpsGatekeeper:
         return {
             "scale_factor": avg_torso_len,
             "bar_y_baseline": avg_bar_y,
+            "active_side": "RIGHT", # Default to RIGHT for frontal/two-sided exercise
             "calibrated_at": time.time()
         }

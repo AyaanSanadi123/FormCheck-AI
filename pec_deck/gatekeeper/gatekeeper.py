@@ -107,5 +107,6 @@ class PecDeckGatekeeper:
         return {
             "scale_factor": avg_scale,
             "shoulder_y_baseline": avg_y,
+            "active_side": "RIGHT", # Default to RIGHT for frontal exercise
             "calibrated_at": time.time()
         }

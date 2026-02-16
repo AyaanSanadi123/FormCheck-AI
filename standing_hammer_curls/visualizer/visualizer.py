@@ -44,6 +44,7 @@ class HammerCurlVisualizer:
         faults = packet.get('faults', [])
         raw_coords = packet.get('raw_coords', None)
         metrics = packet.get('metrics', {})
+        active_side = packet.get('active_side', "RIGHT") # Default to RIGHT if not found
         
         # Extract angle from metrics
         angle = metrics.get('angle', 0)
@@ -55,13 +56,13 @@ class HammerCurlVisualizer:
 
         if raw_coords:
             # 2. Draw Skeleton & Joints
-            self._draw_skeleton(frame, raw_coords, faults)
+            self._draw_skeleton(frame, raw_coords, faults, active_side)
             
             # 3. Draw Flexion Gauge / Angle Text (using raw_coords for position)
-            self._draw_flexion_gauge(frame, raw_coords, angle)
+            self._draw_flexion_gauge(frame, raw_coords, angle, active_side)
 
             # 4. Draw Elbow Anchor (using raw_coords for position)
-            self._draw_elbow_anchor(frame, raw_coords, faults)
+            self._draw_elbow_anchor(frame, raw_coords, faults, active_side)
 
         # 5. Draw HUD (Top Bar)
         self._draw_hud(frame, state, reps, score, status_color)
@@ -72,16 +73,23 @@ class HammerCurlVisualizer:
 
         return frame
 
-    def _draw_skeleton(self, frame, landmarks, faults):
+    def _draw_skeleton(self, frame, landmarks, faults, active_side):
         """Draws stick figure for Hammer Curl, highlighting active arm."""
         h, w = frame.shape[:2]
         
+        # Determine which side is active
+        sh_idx = self.MP_POSE.RIGHT_SHOULDER.value if active_side == "RIGHT" else self.MP_POSE.LEFT_SHOULDER.value
+        elb_idx = self.MP_POSE.RIGHT_ELBOW.value if active_side == "RIGHT" else self.MP_POSE.LEFT_ELBOW.value
+        wrist_idx = self.MP_POSE.RIGHT_WRIST.value if active_side == "RIGHT" else self.MP_POSE.LEFT_WRIST.value
+        hip_idx = self.MP_POSE.RIGHT_HIP.value if active_side == "RIGHT" else self.MP_POSE.LEFT_HIP.value
+
         # Connections for a side view, focusing on the arm and torso
         connections = [
-            (self.MP_POSE.RIGHT_SHOULDER.value, self.MP_POSE.RIGHT_ELBOW.value),
-            (self.MP_POSE.RIGHT_ELBOW.value, self.MP_POSE.RIGHT_WRIST.value),
-            (self.MP_POSE.RIGHT_HIP.value, self.MP_POSE.RIGHT_SHOULDER.value), # Torso connection
-            (self.MP_POSE.LEFT_HIP.value, self.MP_POSE.LEFT_SHOULDER.value),
+            (sh_idx, elb_idx),
+            (elb_idx, wrist_idx),
+            (hip_idx, sh_idx), # Torso connection
+            (self.MP_POSE.LEFT_HIP.value, self.MP_POSE.LEFT_SHOULDER.value), # Still draw passive side torso for context
+            (self.MP_POSE.RIGHT_HIP.value, self.MP_POSE.RIGHT_SHOULDER.value),
             (self.MP_POSE.LEFT_HIP.value, self.MP_POSE.RIGHT_HIP.value),
             (self.MP_POSE.LEFT_SHOULDER.value, self.MP_POSE.RIGHT_SHOULDER.value)
         ]
@@ -97,12 +105,7 @@ class HammerCurlVisualizer:
                 cv2.line(frame, p1, p2, self.COLORS['WHITE'], 2, cv2.LINE_AA)
 
         # Draw Joints and apply fault-based coloring
-        joint_indices = [
-            self.MP_POSE.RIGHT_SHOULDER.value, self.MP_POSE.RIGHT_ELBOW.value, 
-            self.MP_POSE.RIGHT_WRIST.value, self.MP_POSE.RIGHT_HIP.value,
-            self.MP_POSE.LEFT_SHOULDER.value, self.MP_POSE.LEFT_ELBOW.value, 
-            self.MP_POSE.LEFT_WRIST.value, self.MP_POSE.LEFT_HIP.value
-        ]
+        joint_indices = [sh_idx, elb_idx, wrist_idx] # Only highlight active arm joints for faults
         
         for idx in joint_indices:
             lm = landmarks[idx]
@@ -112,19 +115,22 @@ class HammerCurlVisualizer:
                 color = self.COLORS['GREEN'] # Default
                 
                 # Fault-specific coloring (example: ELBOW_SWAY affecting elbow)
-                if "ELBOW_SWAY" in faults and idx == self.MP_POSE.RIGHT_ELBOW.value:
+                if "ELBOW_SWAY" in faults and idx == elb_idx:
                     color = self.COLORS['RED']
-                elif "GRIP_ROTATE" in faults and idx == self.MP_POSE.RIGHT_WRIST.value:
+                elif "GRIP_ROTATE" in faults and idx == wrist_idx:
                     color = self.COLORS['RED']
 
                 cv2.circle(frame, (cx, cy), 5, color, -1)
                 cv2.circle(frame, (cx, cy), 8, self.COLORS['WHITE'], 1) # Outline
 
-    def _draw_elbow_anchor(self, frame, landmarks, faults):
+    def _draw_elbow_anchor(self, frame, landmarks, faults, active_side):
         """Draws a fixed target zone for the elbow."""
         h, w = frame.shape[:2]
+        
+        elb_idx = self.MP_POSE.RIGHT_ELBOW.value if active_side == "RIGHT" else self.MP_POSE.LEFT_ELBOW.value
+        
         # Using raw_coords for position
-        elb = landmarks[self.MP_POSE.RIGHT_ELBOW.value]
+        elb = landmarks[elb_idx]
         center = (int(elb.x * w), int(elb.y * h))
         
         color = self.COLORS['CYAN'] # Changed from PIVOT to CYAN for consistency
@@ -134,11 +140,14 @@ class HammerCurlVisualizer:
         
         cv2.drawMarker(frame, center, color, cv2.MARKER_CROSS, 20, 2)
 
-    def _draw_flexion_gauge(self, frame, landmarks, angle):
+    def _draw_flexion_gauge(self, frame, landmarks, angle, active_side):
         """Draws the angle text near the elbow."""
         h, w = frame.shape[:2]
+        
+        elb_idx = self.MP_POSE.RIGHT_ELBOW.value if active_side == "RIGHT" else self.MP_POSE.LEFT_ELBOW.value
+        
         # Using raw_coords for position
-        elb_x, elb_y = int(landmarks[self.MP_POSE.RIGHT_ELBOW.value].x * w), int(landmarks[self.MP_POSE.RIGHT_ELBOW.value].y * h)
+        elb_x, elb_y = int(landmarks[elb_idx].x * w), int(landmarks[elb_idx].y * h)
         
         color = self.COLORS['GREEN'] if angle < 60 else self.COLORS['WHITE'] # Example condition
         

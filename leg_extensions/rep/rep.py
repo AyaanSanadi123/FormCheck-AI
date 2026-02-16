@@ -24,7 +24,7 @@ class RepLogic:
         
         # Tracking for Velocity
         self.prev_ankle_y = 0
-        self.prev_time = time.time()
+        self.prev_time = None
 
     def process(self, landmarks, raw_landmarks=None, timestamp=None):
         """
@@ -32,6 +32,21 @@ class RepLogic:
         """
         if not landmarks:
             return None
+
+        # Handle initial prev_time setup
+        if self.prev_time is None:
+            self.prev_time = timestamp if timestamp is not None else time.time()
+            # Return an initial packet, not a full logic run
+            return {
+                "state": self.state,
+                "reps": self.rep_count,
+                "score": self.current_score,
+                "feedback": self.feedback,
+                "faults": list(set(self.faults)),
+                "coords": landmarks,
+                "raw_coords": raw_landmarks,
+                "metrics": {"velocity": 0, "ankle_y": 0} # Initial values
+            }
 
         # 1. Coordinate Setup (Using Normalized Landmarks)
         # In normalized space, Knee is at (0,0). We track the Ankle (28).

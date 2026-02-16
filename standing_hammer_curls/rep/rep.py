@@ -26,8 +26,9 @@ class HammerCurlRep:
         # Tracking
         self.prev_angle = 180
         self.min_angle_achieved = 180
+        self.prev_time = None # For dt calculation
 
-    def process(self, landmarks):
+    def process(self, landmarks, raw_landmarks=None, timestamp=None):
         if not landmarks or len(landmarks) < 33: return None
 
         # 1. FETCH JOINTS (Side Profile: 12=Sh, 14=Elb, 16=Wrist)
@@ -36,6 +37,32 @@ class HammerCurlRep:
         
         # 2. FLEXION ANGLE
         angle = self._get_angle(sh, elb, wrist)
+
+        # Calculate dt and angle_velocity
+        if self.prev_time is None:
+            self.prev_time = timestamp
+            self.prev_angle = angle
+            # Return initial packet if no previous frame to compare
+            return {
+                "reps": self.rep_count,
+                "state": self.state,
+                "score": self.current_score,
+                "feedback": self.feedback_buffer,
+                "faults": list(set([f['code'] for f in self.faults])),
+                "coords": landmarks,
+                "raw_coords": raw_landmarks,
+                "metrics": {
+                    "angle": int(angle),
+                    "angle_velocity": 0 # No velocity on first frame
+                }
+            }
+
+        dt = timestamp - self.prev_time
+        angle_change = angle - self.prev_angle
+        angle_velocity = angle_change / dt if dt > 0 else 0
+
+        self.prev_time = timestamp
+        self.prev_angle = angle
         
         # 3. ELBOW DRIFT (Normalized)
         drift = abs(elb.x - self.elbow_x_anchor) / self.humerus_l
@@ -65,13 +92,13 @@ class HammerCurlRep:
             
             # TRANSITION 2: Early Descent (Directional Switch)
             # If the user starts lowering before reaching THRESH_PEAK
-            elif (angle - self.prev_angle) > self.THRESH_DIRECTION_CHANGE:
+            elif angle_velocity > self.THRESH_DIRECTION_CHANGE: # Now uses degrees/second
                 self._add_fault("PARTIAL_ROM", 15, "Squeeze Higher at Top")
                 self.state = "DESCENDING"
 
         elif self.state == "DESCENDING":
             # Check for uncontrolled drop speed
-            if self._is_dropping(angle):
+            if self._is_dropping(angle_velocity): # Pass angle_velocity
                  self._add_fault("CONTROL", 10, "Lower Slowly")
 
             # Finalize Rep
@@ -79,15 +106,19 @@ class HammerCurlRep:
                 self._finalize_rep_success()
                 self.state = "IDLE"
 
-        self.prev_angle = angle
+        #self.prev_angle = angle # This is now updated at the beginning of process
         return {
             "reps": self.rep_count,
             "state": self.state,
             "score": self.current_score,
-            "angle": int(angle),
+            "metrics": {
+                "angle": int(angle),
+                "angle_velocity": angle_velocity
+            },
             "faults": list(set([f['code'] for f in self.faults])),
             "feedback": self.feedback_buffer,
-            "coords": landmarks
+            "coords": landmarks,
+            "raw_coords": raw_landmarks
         }
 
     def _get_angle(self, p1, p2, p3):
@@ -97,8 +128,8 @@ class HammerCurlRep:
         if norm1 == 0 or norm2 == 0: return 180.0
         return np.degrees(np.arccos(np.clip(np.dot(v1, v2) / (norm1 * norm2), -1.0, 1.0)))
 
-    def _is_dropping(self, current_angle):
-        return (current_angle - self.prev_angle) > self.THRESH_DROP_SPEED
+    def _is_dropping(self, angle_velocity):
+        return angle_velocity > self.THRESH_DROP_SPEED
 
     def _reset_rep(self, current_angle):
         self.current_score = 100

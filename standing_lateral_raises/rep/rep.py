@@ -17,7 +17,7 @@ class StandingLateralRaiseRep:
         self.THRESH_SHRUG = 0.10       # 10% reduction in torso length = shrug
         self.THRESH_SWAY = 0.08        # Horizontal hip drift
         self.THRESH_ASYMMETRY = 15.0   # Max degree difference L vs R
-        self.THRESH_DESCENT_SPEED = self.FPS * 0.2 # Raw velocity threshold for controlled descent
+        self.THRESH_DESCENT_SPEED = 0.5 # velocity threshold for controlled descent
         
         # State Management
         self.state = "IDLE"
@@ -30,10 +30,44 @@ class StandingLateralRaiseRep:
         self.max_angle = 0
         self.prev_wrist_y = 0
         self.velocity = 0
+        self.prev_time = None # For dt calculation
 
-    def process(self, landmarks):
-        if not landmarks:
-            return None
+    def process(self, landmarks, raw_landmarks=None, timestamp=None):
+        # Calculate dt
+        if self.prev_time is None:
+            self.prev_time = timestamp
+            # Return initial packet
+            return {
+                "reps": self.rep_count,
+                "state": self.state,
+                "score": self.current_score,
+                "feedback": self.feedback_buffer,
+                "faults": list(set([f['code'] for f in self.faults])),
+                "coords": landmarks,
+                "raw_coords": raw_landmarks,
+                "metrics": {
+                    "angle": int(avg_angle) if 'avg_angle' in locals() else 0,
+                    "velocity": 0 # No velocity on first frame
+                }
+            }
+        
+        dt = timestamp - self.prev_time
+        self.prev_time = timestamp
+
+        if dt == 0: # Avoid division by zero
+            return {
+                "reps": self.rep_count,
+                "state": self.state,
+                "score": self.current_score,
+                "feedback": self.feedback_buffer,
+                "faults": list(set([f['code'] for f in self.faults])),
+                "coords": landmarks,
+                "raw_coords": raw_landmarks,
+                "metrics": {
+                    "angle": int(avg_angle) if 'avg_angle' in locals() else 0,
+                    "velocity": 0
+                }
+            }
 
         # 1. FETCH JOINTS (Normalized)
         l_sh, r_sh = landmarks[11], landmarks[12]
@@ -58,7 +92,7 @@ class StandingLateralRaiseRep:
         # 5. VELOCITY TRACKING
         curr_wrist_y = (l_wrist.y + r_wrist.y) / 2
         if self.prev_wrist_y != 0:
-            self.velocity = (curr_wrist_y - self.prev_wrist_y) * self.FPS
+            self.velocity = (curr_wrist_y - self.prev_wrist_y) / dt
         self.prev_wrist_y = curr_wrist_y
 
         # --- STATE MACHINE ---
@@ -102,9 +136,13 @@ class StandingLateralRaiseRep:
             "reps": self.rep_count,
             "score": self.current_score,
             "feedback": self.feedback_buffer,
-            "angle": int(avg_angle),
+            "metrics": {
+                "angle": int(avg_angle),
+                "velocity": self.velocity
+            },
             "faults": list(set([f['code'] for f in self.faults])),
-            "coords": landmarks
+            "coords": landmarks,
+            "raw_coords": raw_landmarks
         }
 
     # --- MATH HELPERS ---

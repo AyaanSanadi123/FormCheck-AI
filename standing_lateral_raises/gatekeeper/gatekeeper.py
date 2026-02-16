@@ -91,7 +91,7 @@ class StandingLateralRaiseGatekeeper:
     def _finalize_calibration(self):
         """Averages the buffer to create the Calibration Passport."""
         self.calibration_data = {
-            'active_side': "BOTH", # Frontal view, both sides are active
+            'active_side': "RIGHT", # Changed from "BOTH" to "RIGHT" for blueprint compliance
             'scale_factor': np.mean([f['torso_l'] for f in self.window_buffer]), # Torso length as scale factor
             'arm_length': np.mean([f['arm_l'] for f in self.window_buffer]),
             'sh_y_baseline': np.mean([f['sh_y'] for f in self.window_buffer]),

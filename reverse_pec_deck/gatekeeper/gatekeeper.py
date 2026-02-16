@@ -101,5 +101,6 @@ class ReversePecDeckGatekeeper:
         
         return {
             "scale_factor": avg_scale,
+            "active_side": "RIGHT", # Default to RIGHT for frontal exercise
             "calibrated_at": time.time()
         }

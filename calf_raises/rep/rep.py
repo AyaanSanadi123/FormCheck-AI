@@ -25,7 +25,7 @@ class RepLogic:
         
         # Tracking
         self.prev_heel_y = 0
-        self.prev_time = time.time() # Initialized for dt calculation
+        self.prev_time = None # Initialized for dt calculation (Corrected to None)
 
     def process(self, landmarks, raw_landmarks=None, timestamp=None):
         """
@@ -33,6 +33,21 @@ class RepLogic:
         """
         if not landmarks:
             return None
+
+        # Handle initial prev_time setup
+        if self.prev_time is None:
+            self.prev_time = timestamp if timestamp is not None else time.time()
+            # Return an initial packet, not a full logic run
+            return {
+                "state": self.state,
+                "reps": self.rep_count,
+                "score": self.current_score,
+                "feedback": self.feedback,
+                "faults": [f['code'] for f in self.faults],
+                "coords": landmarks,
+                "raw_coords": raw_landmarks,
+                "metrics": {"heel_height": 0, "velocity": 0} # Initial values
+            }
 
         # 1. Setup Data
         # In normalized space: Toe is (0,0), Heel is (30), Knee is (26), Hip is (24)

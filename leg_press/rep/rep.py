@@ -26,7 +26,7 @@ class RepLogic:
         
         # Tracking for Physics
         self.prev_ankle_y = 0
-        self.prev_time = time.time()
+        self.prev_time = None
 
     def process(self, landmarks, raw_landmarks=None, timestamp=None):
         """
@@ -34,6 +34,21 @@ class RepLogic:
         """
         if not landmarks:
             return None
+
+        # Handle initial prev_time setup
+        if self.prev_time is None:
+            self.prev_time = timestamp if timestamp is not None else time.time()
+            # Return an initial packet, not a full logic run
+            return {
+                "state": self.state,
+                "reps": self.rep_count,
+                "score": self.current_score,
+                "feedback": self.feedback,
+                "faults": [f['code'] for f in self.faults],
+                "coords": landmarks,
+                "raw_coords": raw_landmarks,
+                "metrics": {"depth": 0, "knee_angle": 0} # Initial values
+            }
 
         # 1. Setup Data
         # Coordinates: Hip(24), Knee(26), Ankle(28)

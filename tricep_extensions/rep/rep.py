@@ -25,7 +25,7 @@ class RepLogic:
         
         # Tracking
         self.prev_angle = 60.0
-        self.prev_time = time.time() # Initialized for dt calculation
+        self.prev_time = None # Initialized for dt calculation (Corrected to None)
         self.angular_velocity = 0.0 # Added for consistency
 
     def process(self, landmarks, raw_landmarks=None, timestamp=None):
@@ -34,6 +34,22 @@ class RepLogic:
         """
         if not landmarks:
             return None
+
+        # Handle initial prev_time setup
+        if self.prev_time is None:
+            self.prev_time = timestamp if timestamp is not None else time.time()
+            self.prev_angle = self._calculate_angle(landmarks[12], landmarks[14], landmarks[16]) # Initialize prev_angle
+            # Return an initial packet, not a full logic run
+            return {
+                "state": self.state,
+                "reps": self.rep_count,
+                "score": self.current_score,
+                "feedback": self.feedback,
+                "faults": [f['code'] for f in self.faults],
+                "coords": landmarks,
+                "raw_coords": raw_landmarks,
+                "metrics": {"angle": int(self.prev_angle), "velocity": 0} # Initial values
+            }
 
         # 1. Setup Data
         # Coordinates: Shoulder(12), Elbow(14), Wrist(16)
