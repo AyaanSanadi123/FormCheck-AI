@@ -1,0 +1,87 @@
+# Pipeline Audit Report: Branch 'shoaib'
+Date: 16 February 2026
+
+## Executive Summary
+A comprehensive audit of the 9 unique exercises in the `shoaib` branch was conducted against the `PIPELINE_BLUEPRINT.md`. While the architectural structure is generally followed, there are critical deviations in the **Interface Standards**, **Physics Logic**, and **Visualizer Robustness** that will cause runtime failures or incorrect analysis.
+
+## Critical Issues (Must Fix)
+
+### 1. Interface Signature Violations
+The `RepLogic.process` method MUST accept `raw_landmarks` and `timestamp`. The following exercises fail to accept these arguments, which will crash the main pipeline runner if it passes them:
+*   `standing_hammer_curls`
+*   `standing_lateral_raises`
+*   `standing_st_bar_bicep_curls`
+
+**Correction:**
+Change `def process(self, landmarks):` to `def process(self, landmarks, raw_landmarks=None, timestamp=None):`.
+
+### 2. Physics & Timing Logic Violations
+The Blueprint explicitly states: "DO NOT assume a fixed FPS". The following exercises use frame-based thresholds (e.g., "10 degrees per frame") or assume 30 FPS in their calculations:
+*   `standing_hammer_curls` (No `dt` calculation, assumes per-frame speed)
+*   `standing_lateral_raises` (Hardcoded `self.FPS * 0.2`)
+*   `standing_st_bar_bicep_curls` (No `dt` calculation)
+
+**Correction:**
+Implement proper `dt = current_time - prev_time` calculation and use it to normalize velocity (e.g., `degrees/second`).
+
+### 3. Packet Structure Mismatches
+The Visualizers expect specific data keys (`metrics`, `raw_coords`), but the Rep Logic in these exercises fails to provide them:
+*   `standing_hammer_curls`: Returns `angle` at root (Visualizer expects `metrics['angle']`). Fails to pass `raw_coords`.
+*   `standing_lateral_raises`: Returns `angle` at root. Fails to pass `raw_coords`.
+*   `standing_st_bar_bicep_curls`: Returns `angle` at root. Fails to pass `raw_coords`.
+
+**Result:** The Visualizers for these exercises will likely crash or render nothing (black screen) because `raw_coords` is None.
+
+### 4. Time Initialization Bug (The "First Frame" Spike)
+Multiple exercises initialize `self.prev_time = time.time()` in `__init__`. If the pipeline runner passes a video timestamp (e.g., `0.033`), the first `dt` calculation will be `0.033 - 1739...` (huge negative number), breaking velocity logic.
+*   **Affected:** `calf_raises`, `leg_extensions`, `leg_press`, `preacher_curls`, `tricep_extensions`.
+*   **Correction:** Initialize `self.prev_time = None`. In `process`, check `if self.prev_time is None: self.prev_time = timestamp; return`.
+
+### 5. Visualizer Hardcoding (Side Bias)
+Several visualizers hardcode the **Right Side** landmarks, ignoring the `active_side` detected by the Gatekeeper. If a user faces Left, the visualizer will draw points on the occluded/wrong side.
+*   `leg_extensions/visualizer.py`: Hardcoded indices 24, 26, 28.
+*   `standing_hammer_curls/visualizer.py`: Hardcoded `MP_POSE.RIGHT_...`.
+
+## Exercise-Specific Findings
+
+### Calf Raises
+*   **Status:** Logic mostly sound.
+*   **Issue:** Time initialization bug.
+
+### Leg Extensions
+*   **Status:** Logic mostly sound.
+*   **Issue:** Time initialization bug.
+*   **Issue:** Visualizer hardcoded to Right side.
+
+### Leg Press
+*   **Status:** Good.
+*   **Issue:** Time initialization bug.
+
+### Overhead Press
+*   **Status:** **Excellent.** This module follows the Blueprint perfectly. (Correct time init, correct packet structure).
+
+### Preacher Curls
+*   **Status:** Good.
+*   **Issue:** Time initialization bug.
+*   **Issue:** `ECCENTRIC` state logic (`angle > 160`) might automatically trigger `COMPLETE` too aggressively.
+
+### Standing Hammer Curls
+*   **Status:** **Broken.**
+*   **Issues:** Interface mismatch, Fixed FPS assumption, Packet structure mismatch (missing `raw_coords`, `metrics`), Visualizer hardcoded to Right side.
+
+### Standing Lateral Raises
+*   **Status:** **Broken.**
+*   **Issues:** Interface mismatch, Fixed FPS assumption, Packet structure mismatch.
+
+### Standing ST Bar Bicep Curls
+*   **Status:** **Broken.**
+*   **Issues:** Interface mismatch, Fixed FPS assumption, Packet structure mismatch.
+
+### Tricep Extensions
+*   **Status:** Good.
+*   **Issue:** Time initialization bug.
+
+## Recommendations
+1.  **Refactor the "Standing" trio:** `hammer_curls`, `lateral_raises`, and `st_bar_bicep_curls` need a full pass to align with the standard `RepLogic` template (using `dt`, accepting `raw_landmarks`, formatting `packet` correctly).
+2.  **Fix Time Init:** Apply the `self.prev_time = None` pattern across all exercises.
+3.  **Dynamic Visualizers:** Update `leg_extensions` and `hammer_curls` visualizers to use the `active_side` metric for drawing the correct limb.
