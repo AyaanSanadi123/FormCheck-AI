@@ -149,13 +149,12 @@ class Visualizer:
             thickness = 4
             cv2.putText(frame, "GOOD DEPTH!", (line_end[0] + 10, el_y + 5), 
                         self.FONT, 0.6, self.COLORS['GREEN'], 2, cv2.LINE_AA)
+            cv2.line(frame, line_start, line_end, line_color, thickness, cv2.LINE_AA)
         else:
             line_color = self.COLORS['BLUE']
             thickness = 2
             for i in range(line_start[0], line_end[0], 15):
                 cv2.line(frame, (i, el_y), (i+10, el_y), line_color, thickness, cv2.LINE_AA)
-        else:
-            cv2.line(frame, line_start, line_end, line_color, thickness, cv2.LINE_AA)
 
     def _draw_hud(self, frame, state, reps, score, color):
         """Standardized HUD per pipeline blueprint."""

@@ -162,6 +162,15 @@ class PipelineFactory:
                 'rep': ('rep.rep', 'InclinePressRep'),
                 'visualizer': ('visualizer.visualizer', 'Visualizer')
             }
+        },
+        'dips': {
+            'module': 'dips',
+            'classes': {
+                'gatekeeper': ('gatekeeper.gatekeeper', 'Gatekeeper'),
+                'normalizer': ('normalizer.normalizer', 'Normalizer'),
+                'rep': ('rep.rep', 'RepLogic'),
+                'visualizer': ('visualizer.visualizer', 'Visualizer')
+            }
         }
     }
 
@@ -188,7 +197,7 @@ class PipelineFactory:
         
         # Dynamically import classes
         for component, (sub_path, class_name) in config['classes'].items():
-            full_module_path = f"{module_base}.{sub_path}"
+            full_module_path = f"pipelines.{module_base}.{sub_path}"
             try:
                 mod = importlib.import_module(full_module_path)
                 cls = getattr(mod, class_name)
