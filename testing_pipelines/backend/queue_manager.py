@@ -1,17 +1,16 @@
 # D:\FormCheck-AI\testing_pipelines\backend\queue_manager.py
 import os
-import shutil
-import math
 from typing import List, Dict
+import traceback
 
-# We will build these modules next!
-# from drive_fetcher import scan_drive_folder, download_batch
-# from pipeline_runner import process_video_headless
+# Import the actual modules we built
+from drive_fetcher import get_video_list, download_batch
+from pipeline_runner import process_video_headless
 
 class QueueManager:
     """
     Orchestrates the downloading, batch processing, and cleanup of test videos.
-    Ensures the local drive is never overloaded.
+    Now supports paginated batching (Batch 1, Batch 2, etc.) for massive folders.
     """
     def __init__(self, cache_dir: str = "local_cache", telemetry_dir: str = "telemetry_data", batch_size: int = 5):
         self.cache_dir = cache_dir
@@ -22,63 +21,69 @@ class QueueManager:
         os.makedirs(self.cache_dir, exist_ok=True)
         os.makedirs(self.telemetry_dir, exist_ok=True)
 
-    def process_folder(self, drive_folder_url: str, exercise_name: str) -> Dict:
-        """The main entry point for the batch processing loop."""
+    def process_folder(self, drive_folder_url: str, exercise_name: str, batch_index: int = 0) -> Dict:
+        """The main entry point for processing a specific batch of videos."""
         
-        # STEP 1: Intake & Validation (Mocked for now)
         print(f"Scanning Google Drive Folder: {drive_folder_url}")
-        # master_video_list = scan_drive_folder(drive_folder_url)
         
-        # MOCK DATA: Pretend we found 12 valid video IDs in the folder
-        master_video_list = [f"drive_id_{i}" for i in range(1, 13)] 
-        total_videos = len(master_video_list)
+        # 1. Fetch ALL valid video IDs from the cloud
+        all_file_ids = get_video_list(drive_folder_url)
+        total_videos = len(all_file_ids)
         
         if total_videos == 0:
-            return {"status": "error", "message": "No valid videos found in folder."}
+            print("No valid videos found in folder.")
+            return {"successful": 0, "failed": 0, "total_videos": 0}
 
-        # STEP 2: The Chunking Engine
-        total_batches = math.ceil(total_videos / self.batch_size)
-        print(f"Found {total_videos} videos. Splitting into {total_batches} batches of {self.batch_size}.")
+        # --- THE PAGINATION LOGIC ---
+        start_idx = batch_index * self.batch_size
+        end_idx = start_idx + self.batch_size
+        
+        # Slice the array to get only the IDs for this specific batch
+        target_file_ids = all_file_ids[start_idx:end_idx]
+        
+        if not target_file_ids:
+            print(f"Batch {batch_index + 1} is empty (out of bounds).")
+            return {"successful": 0, "failed": 0, "total_videos": total_videos}
 
-        results = {"successful": 0, "failed": 0, "details": []}
+        print(f"Processing Batch {batch_index + 1} (Videos {start_idx + 1} to {min(end_idx, total_videos)} of {total_videos})...")
 
-        # STEP 3: The Execution Loop
-        for batch_index in range(total_batches):
-            # Slice the master list into a chunk of 5
-            start_idx = batch_index * self.batch_size
-            end_idx = start_idx + self.batch_size
-            current_batch = master_video_list[start_idx:end_idx]
+        results = {"successful": 0, "failed": 0, "details": [], "total_videos": total_videos}
+        
+        try:
+            # 2. Download the specific batch
+            downloaded_files = download_batch(target_file_ids, self.cache_dir)
             
-            print(f"\n--- Processing Batch {batch_index + 1}/{total_batches} ---")
-            
-            downloaded_files = []
-            
-            try:
-                # 3A: Download the batch
-                # downloaded_files = download_batch(current_batch, self.cache_dir)
+            # 3. Process the batch headless
+            for video_path in downloaded_files:
+                print(f"Running headless AI on: {video_path}")
+                success, msg = process_video_headless(video_path, exercise_name, self.telemetry_dir)
                 
-                # MOCK DATA: Pretend they downloaded successfully
-                downloaded_files = [os.path.join(self.cache_dir, f"{vid}.mp4") for vid in current_batch]
-                for f in downloaded_files: open(f, 'w').close() # Create dummy files
-                
-                # 3B: Process the batch
-                for video_path in downloaded_files:
-                    print(f"Running headless AI on: {video_path}")
-                    # success, msg = process_video_headless(video_path, exercise_name, self.telemetry_dir)
-                    
-                    # Log the result
+                # Log the result
+                if success:
                     results["successful"] += 1
-                    results["details"].append({"file": video_path, "status": "Processed"})
-                    
-            except Exception as e:
-                print(f"CRITICAL ERROR in Batch {batch_index + 1}: {e}")
+                    results["details"].append({"file": video_path, "status": "Processed", "message": msg})
+                else:
+                    results["failed"] += 1
+                    results["details"].append({"file": video_path, "status": "Failed", "message": msg})
                 
-            finally:
-                # 3C: THE CRASH NET (Cleanup)
-                print(f"Emptying local cache for Batch {batch_index + 1}...")
-                self._empty_cache()
+        except Exception as e:
+            # Capture the massive, detailed stack trace
+            full_trace = traceback.format_exc() 
+            
+            print(f"CRITICAL ERROR in Batch {batch_index + 1}:")
+            print(full_trace) # Print it to the Python terminal
+            
+            # Send the full stack trace to the Next.js UI!
+            results["critical_error"] = full_trace
+            
+        finally:
+            # THE CRASH NET (Cleanup)
+            # We purposely leave this commented out in the Testing Studio environment
+            # so the Next.js frontend can stream the files. The "Sweep Cache" button handles deletion.
+            # print(f"Emptying local cache for Batch {batch_index + 1}...")
+            # self._empty_cache()
+            pass
 
-        # STEP 4: The Handoff
         print("\n✅ Queue Processing Complete!")
         return results
 
@@ -95,5 +100,5 @@ class QueueManager:
 # If you want to test this script directly:
 if __name__ == "__main__":
     manager = QueueManager()
-    summary = manager.process_folder("https://drive.google.com/...", "dips")
+    summary = manager.process_folder("YOUR_DRIVE_URL_HERE", "dips", batch_index=0)
     print(summary)

@@ -67,16 +67,16 @@ class PipelineFactory:
         'squat': {
             'module': 'squat',
             'classes': {
-                'gatekeeper': ('gatekeeper.gatekeeper-squat', 'Gatekeeper'),
+                'gatekeeper': ('gatekeeper.gatekeeper', 'Gatekeeper'),
                 'normalizer': ('normalizer.normalizer', 'SquatNormalizer'),
-                'rep': ('rep.squat_rep', 'SquatRep'),
+                'rep': ('rep.rep', 'SquatRep'),
                 'visualizer': ('visualizer.visualizer', 'Visualizer') # Assuming standard name? Check.
             }
         },
         'deadlift': {
             'module': 'deadlift',
             'classes': {
-                'gatekeeper': ('gatekeeper.gatekeeper-deadlift', 'DeadliftGatekeeper'),
+                'gatekeeper': ('gatekeeper.gatekeeper', 'DeadliftGatekeeper'),
                 'normalizer': ('normalizer.normalizer', 'DeadliftNormalizer'),
                 'rep': ('rep.rep', 'DeadliftRep'),
                 'visualizer': ('visualizer.visualizer', 'DeadliftVisualizer') # Check name

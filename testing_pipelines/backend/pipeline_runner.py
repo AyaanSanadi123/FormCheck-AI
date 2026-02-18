@@ -1,4 +1,3 @@
-# D:\FormCheck-AI\testing_pipelines\backend\pipeline_runner.py
 import cv2
 import mediapipe as mp
 import json
@@ -68,6 +67,7 @@ def process_video_headless(video_path: str, exercise_name: str, output_dir: str)
     if fps == 0 or math.isnan(fps): 
         fps = 30.0 # Fallback for corrupted metadata
 
+    # --- REVERTED: Use standard MediaPipe initialization ---
     mp_pose = mp.solutions.pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
     
     # Initialize your core AI Pipeline

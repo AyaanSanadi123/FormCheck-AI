@@ -47,24 +47,28 @@ class SquatNormalizer:
             idx_sh = 12
 
         l_hip = landmarks[idx_hip]
-        origin_x = l_hip.x
+        
+        # SAFE EXTRACTION for origin
+        origin_x = l_hip.get('x', 0.0) if isinstance(l_hip, dict) else getattr(l_hip, 'x', 0.0)
         
         # Determine Facing Direction
-        # If user is Facing Left (active side is Left), Nose X < Hip X
-        # We need to flip X so everyone faces Right.
-        
-        # Standardize Facing:
-        # If active_side is LEFT, user is facing LEFT (typically).
+        # Standardize Facing: If active_side is LEFT, user is facing LEFT (typically).
         # We want to flip everything horizontally if Facing Left.
-        # Or simpler:
         facing_mult = -1.0 if self.active_side == "LEFT" else 1.0
 
         aligned = []
         for lm in landmarks:
-            x = getattr(lm, 'x', lm.get('x')) if hasattr(lm, 'x') or isinstance(lm, dict) else 0
-            y = getattr(lm, 'y', lm.get('y')) if hasattr(lm, 'y') or isinstance(lm, dict) else 0
-            z = getattr(lm, 'z', lm.get('z')) if hasattr(lm, 'z') or isinstance(lm, dict) else 0
-            vis = getattr(lm, 'visibility', lm.get('visibility', 1.0)) if hasattr(lm, 'visibility') or isinstance(lm, dict) else 1.0
+            # --- SAFE EXTRACTION FIX ---
+            if isinstance(lm, dict):
+                x = lm.get('x', 0.0)
+                y = lm.get('y', 0.0)
+                z = lm.get('z', 0.0)
+                vis = lm.get('visibility', 1.0)
+            else:
+                x = getattr(lm, 'x', 0.0)
+                y = getattr(lm, 'y', 0.0)
+                z = getattr(lm, 'z', 0.0)
+                vis = getattr(lm, 'visibility', 1.0)
 
             # 3. Transform Points
             

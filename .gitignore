@@ -7,3 +7,8 @@ __pycache__/
 .vscode/
 tmp/
 *.env
+
+# Frontend specific ignores
+testing_pipelines/frontend/node_modules/
+testing_pipelines/frontend/.next/
+testing_pipelines/frontend/dist/
