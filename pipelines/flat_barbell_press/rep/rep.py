@@ -34,7 +34,7 @@ class BenchPressRep:
         # Timers
         self.start_time = 0
 
-    def process(self, landmarks, raw_landmarks=None):
+    def process(self, landmarks, raw_landmarks=None,timestamp=None):
         if not landmarks:
             return None
 

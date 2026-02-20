@@ -37,17 +37,26 @@ class BenchNormalizer:
             idx_sh = 12
             
         sh = landmarks[idx_sh]
-        origin_x = getattr(sh, 'x', sh.get('x')) if hasattr(sh, 'x') or isinstance(sh, dict) else 0
+        
+        # --- SAFE EXTRACTION FOR ORIGIN ---
+        origin_x = sh.get('x', 0.0) if isinstance(sh, dict) else getattr(sh, 'x', 0.0)
         
         # Scaling factor
         scale = self.arm_length if self.arm_length > 0.01 else 1.0
 
         aligned = []
         for lm in landmarks:
-            x = getattr(lm, 'x', lm.get('x')) if hasattr(lm, 'x') or isinstance(lm, dict) else 0
-            y = getattr(lm, 'y', lm.get('y')) if hasattr(lm, 'y') or isinstance(lm, dict) else 0
-            z = getattr(lm, 'z', lm.get('z')) if hasattr(lm, 'z') or isinstance(lm, dict) else 0
-            vis = getattr(lm, 'visibility', lm.get('visibility', 1.0))
+            # --- SAFE EXTRACTION FIX ---
+            if isinstance(lm, dict):
+                x = lm.get('x', 0.0)
+                y = lm.get('y', 0.0)
+                z = lm.get('z', 0.0)
+                vis = lm.get('visibility', 1.0)
+            else:
+                x = getattr(lm, 'x', 0.0)
+                y = getattr(lm, 'y', 0.0)
+                z = getattr(lm, 'z', 0.0)
+                vis = getattr(lm, 'visibility', 1.0)
 
             # 3. Transform Points
             # X: Shift to shoulder, Flip if facing Left, Scale

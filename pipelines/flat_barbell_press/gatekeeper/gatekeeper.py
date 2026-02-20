@@ -7,7 +7,7 @@ class BenchGatekeeper:
     def __init__(self):
         # --- CONFIGURATION ---
         self.FPS = 30
-        self.REQUIRED_DURATION = 2.0  # Seconds
+        self.REQUIRED_DURATION = 0.1  # Seconds
         self.BUFFER_SIZE = int(self.FPS * self.REQUIRED_DURATION) # 60 Frames
         
         # Thresholds
